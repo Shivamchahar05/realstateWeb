@@ -1,0 +1,31 @@
+<section class="auth-page">
+  <div class="container auth-card">
+    <h1>Sign in</h1>
+    <p class="auth-lead">One account for buyers and sellers — your role decides what you see.</p>
+
+    <form (ngSubmit)="submit()">
+      <label>
+        Email
+        <input type="email" [(ngModel)]="email" name="email" required autocomplete="email" />
+      </label>
+      <label>
+        Password
+        <input type="password" [(ngModel)]="password" name="password" required autocomplete="current-password" />
+      </label>
+
+      @if (error) {
+        <p class="form-error">{{ error }}</p>
+      }
+
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="loading">
+        {{ loading ? 'Signing in...' : 'Sign in' }}
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      New here? <a routerLink="/register">Create an account</a>
+    </p>
+    <p class="auth-hint">Buyer: buyer&#64;example.com / Buyer&#64;12345</p>
+    <p class="auth-hint">Seller: seller&#64;example.com / Seller&#64;12345</p>
+  </div>
+</section>

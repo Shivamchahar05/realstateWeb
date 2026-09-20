@@ -1,0 +1,45 @@
+<section class="auth-page">
+  <div class="container auth-card">
+    <h1>Create account</h1>
+    <p class="auth-lead">Register as a buyer to browse, or as a seller to list your property.</p>
+
+    <form (ngSubmit)="submit()">
+      <label>
+        I am a
+        <select [(ngModel)]="role" name="role" required>
+          <option value="BUYER">Buyer — browse verified homes</option>
+          <option value="SELLER">Seller — list property &amp; upload documents</option>
+        </select>
+      </label>
+      <label>
+        Full name
+        <input type="text" [(ngModel)]="fullName" name="fullName" required autocomplete="name" />
+      </label>
+      <label>
+        Email
+        <input type="email" [(ngModel)]="email" name="email" required autocomplete="email" />
+      </label>
+      <label>
+        Phone (optional)
+        <input type="tel" [(ngModel)]="phone" name="phone" autocomplete="tel" placeholder="10-digit mobile" />
+      </label>
+      <label>
+        Password
+        <input type="password" [(ngModel)]="password" name="password" required autocomplete="new-password" />
+      </label>
+      <p class="auth-hint">Min 8 chars with upper, lower, number, and special character.</p>
+
+      @if (error) {
+        <p class="form-error">{{ error }}</p>
+      }
+
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="loading">
+        {{ loading ? 'Creating account...' : 'Register' }}
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      Already registered? <a routerLink="/login">Sign in</a>
+    </p>
+  </div>
+</section>

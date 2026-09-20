@@ -1,0 +1,60 @@
+<section class="profile-page">
+  <div class="profile-glow" aria-hidden="true"></div>
+
+  <div class="container profile-wrap">
+    @if (loading) {
+      <p class="status-msg">Loading your profile...</p>
+    } @else if (profile) {
+      <article class="profile-panel">
+        <header class="profile-hero">
+          <div class="avatar" aria-hidden="true">{{ initials(profile.fullName) }}</div>
+          <div class="hero-copy">
+            <p class="eyebrow">My profile</p>
+            <h1>{{ profile.fullName }}</h1>
+            <p class="role-line">
+              <span class="role-pill">{{ roleLabel(profile.role) }}</span>
+              <span class="status-dot" [class.is-active]="profile.status === 'ACTIVE'"></span>
+              {{ profile.status }}
+            </p>
+          </div>
+        </header>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <span>Email</span>
+            <strong>{{ profile.email }}</strong>
+          </div>
+          <div class="info-item">
+            <span>Phone</span>
+            <strong>{{ profile.phone || 'Not added' }}</strong>
+          </div>
+          <div class="info-item">
+            <span>Account role</span>
+            <strong>{{ roleLabel(profile.role) }}</strong>
+          </div>
+          <div class="info-item">
+            <span>Last login</span>
+            <strong>
+              @if (profile.lastLoginAt) {
+                {{ profile.lastLoginAt | date: 'medium' }}
+              } @else {
+                —
+              }
+            </strong>
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          @if (profile.role === 'SELLER') {
+            <a routerLink="/seller/properties" class="btn btn-primary">Go to my properties</a>
+            <a routerLink="/seller/properties/new" class="btn btn-ghost">Add property</a>
+          } @else {
+            <a routerLink="/browse" class="btn btn-primary">Browse verified homes</a>
+            <a routerLink="/" class="btn btn-ghost">Back to home</a>
+          }
+          <button type="button" class="btn btn-logout" (click)="logout()">Logout</button>
+        </div>
+      </article>
+    }
+  </div>
+</section>

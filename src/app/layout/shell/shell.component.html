@@ -1,0 +1,59 @@
+<header class="site-header">
+  <div class="container header-inner">
+    <a routerLink="/" class="brand">Verified Property</a>
+    <nav class="site-nav">
+      <a routerLink="/browse" routerLinkActive="active">Buy</a>
+      @if (auth.isAuthenticated() && auth.isSeller()) {
+        <a routerLink="/seller/properties" routerLinkActive="active">My properties</a>
+        <a routerLink="/seller/properties/new" routerLinkActive="active">Sell</a>
+      } @else if (!auth.isAuthenticated() || auth.isBuyer()) {
+        <a routerLink="/register" [queryParams]="{ role: 'SELLER' }">Sell</a>
+      }
+
+      @if (auth.isAuthenticated()) {
+        @if (auth.currentUser(); as user) {
+          <div class="user-menu">
+            <a routerLink="/account" class="user-chip" routerLinkActive="active" title="View profile">
+              <span class="user-avatar" aria-hidden="true">{{ initials(user.fullName) }}</span>
+              <span class="user-meta">
+                <strong>{{ user.fullName }}</strong>
+                <em>{{ roleLabel(user.role) }}</em>
+              </span>
+            </a>
+            <button type="button" class="logout-btn" (click)="logout()">Logout</button>
+          </div>
+        }
+      } @else {
+        <a routerLink="/login" routerLinkActive="active">Sign in</a>
+        <a routerLink="/register" class="nav-cta" routerLinkActive="active">Register</a>
+      }
+    </nav>
+  </div>
+</header>
+
+<main>
+  <router-outlet />
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div>
+      <p class="footer-brand">Verified Property</p>
+      <p class="footer-copy">Verified homes for buyers. Structured listing for sellers across NCR.</p>
+    </div>
+    <div class="footer-links">
+      <a routerLink="/browse">Browse listings</a>
+      @if (auth.isAuthenticated()) {
+        <a routerLink="/account">My profile</a>
+        <button type="button" class="footer-logout" (click)="logout()">Logout</button>
+      } @else {
+        <a routerLink="/register">Create account</a>
+        <a routerLink="/login">Sign in</a>
+      }
+    </div>
+    <div class="footer-meta">
+      <p>Gurgaon · Noida · Delhi · Faridabad</p>
+      <p>Documents → Inspection → Publish</p>
+    </div>
+  </div>
+</footer>

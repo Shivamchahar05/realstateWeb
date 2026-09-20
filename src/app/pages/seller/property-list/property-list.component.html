@@ -1,0 +1,83 @@
+<section class="seller-panel">
+  <div class="container">
+    <section class="page-header">
+      <div>
+        <h1>My properties</h1>
+        <p>Add listings, upload documents, and track verification. Draft / returned properties can be edited.</p>
+      </div>
+      <a routerLink="/seller/properties/new" class="btn btn--primary">Add property</a>
+    </section>
+
+    <div class="toolbar">
+      <label class="search-field">
+        <span>Search</span>
+        <input type="search" [formControl]="searchControl" placeholder="Title, code, or locality" />
+      </label>
+    </div>
+
+    @if (errorMessage) {
+      <div class="alert alert--error">{{ errorMessage }}</div>
+    }
+
+    @if (loading) {
+      <p class="state-message">Loading properties…</p>
+    } @else if (!properties.length) {
+      <div class="empty-state">
+        <h2>No properties yet</h2>
+        <p>Create a listing, upload ownership docs, then submit for legal review.</p>
+        <a routerLink="/seller/properties/new" class="btn btn--primary">Add property</a>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Title</th>
+              <th>Location</th>
+              <th>Asking price</th>
+              <th>Verification</th>
+              <th>Listing</th>
+              <th>Updated</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (property of properties; track property.id) {
+              <tr>
+                <td class="mono">{{ property.propertyCode }}</td>
+                <td>{{ property.title }}</td>
+                <td>{{ property.locality }}, {{ property.city }}</td>
+                <td>{{ property.askingPrice | inr }}</td>
+                <td><span class="status-pill">{{ formatStatus(property.verificationStatus) }}</span></td>
+                <td><span class="status-pill status-pill--muted">{{ formatStatus(property.listingStatus) }}</span></td>
+                <td>{{ property.updatedAt | date: 'mediumDate' }}</td>
+                <td class="actions">
+                  <a [routerLink]="['/seller/properties', property.id]">Open</a>
+                  @if (canEdit(property)) {
+                    <a [routerLink]="['/seller/properties', property.id, 'edit']">Edit</a>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination">
+        <button type="button" class="btn btn--ghost" (click)="goToPage(page - 1)" [disabled]="page <= 1">
+          Previous
+        </button>
+        <span>Page {{ page }} of {{ totalPages }} · {{ total }} total</span>
+        <button
+          type="button"
+          class="btn btn--ghost"
+          (click)="goToPage(page + 1)"
+          [disabled]="page >= totalPages"
+        >
+          Next
+        </button>
+      </div>
+    }
+  </div>
+</section>

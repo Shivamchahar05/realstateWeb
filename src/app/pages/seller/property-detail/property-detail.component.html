@@ -1,0 +1,225 @@
+<section class="seller-panel">
+  <div class="container">
+    @if (loading) {
+      <p class="state-message">Loading property…</p>
+    } @else if (errorMessage) {
+      <div class="alert alert--error">{{ errorMessage }}</div>
+    } @else if (property) {
+      <section class="page-header">
+        <div>
+          <p class="property-code">{{ property.propertyCode }}</p>
+          <h1>{{ property.title }}</h1>
+          <p>{{ property.locality }}, {{ property.city }}, {{ property.state }}</p>
+        </div>
+        <div class="header-actions">
+          @if (canEdit) {
+            <a [routerLink]="['/seller/properties', property.id, 'edit']" class="btn btn--primary">Edit property</a>
+          }
+          <a routerLink="/seller/properties" class="btn btn--ghost">Back</a>
+        </div>
+      </section>
+
+      <div class="status-row">
+        <div>
+          <span class="label">Verification</span>
+          <span class="status-pill">{{ formatStatus(property.verificationStatus) }}</span>
+        </div>
+        <div>
+          <span class="label">Listing</span>
+          <span class="status-pill status-pill--muted">{{ formatStatus(property.listingStatus) }}</span>
+        </div>
+        <div>
+          <span class="label">Asking price</span>
+          <strong>{{ property.askingPrice | inr }}</strong>
+        </div>
+      </div>
+
+      @if (property.rejectionReason) {
+        <div class="alert alert--warning">
+          <strong>Needs attention</strong>
+          <p>{{ property.rejectionReason }}</p>
+        </div>
+      }
+
+      @if (actionDocs().length) {
+        <div class="alert alert--warning">
+          <strong>Action required on documents</strong>
+          <p>
+            {{ actionDocs().length }} document{{ actionDocs().length === 1 ? '' : 's' }} need
+            re-upload or a new file. Use “Upload replacement” on each row below.
+          </p>
+        </div>
+      } @else if (property.verificationStatus === 'LEGAL_REVIEW' || property.verificationStatus === 'REVIEW_REQUIRED') {
+        <div class="alert alert--warning">
+          <strong>Legal review in progress</strong>
+          <p>If the lawyer requests more papers, they will appear below for upload.</p>
+        </div>
+      }
+
+      <section class="detail-section">
+        <h2>Verification timeline</h2>
+        @if (!timeline.length) {
+          <p class="muted">No events yet.</p>
+        } @else {
+          <ol class="timeline">
+            @for (entry of timeline; track entry.id) {
+              <li>
+                <div class="timeline__dot"></div>
+                <div class="timeline__content">
+                  <strong>{{ formatStatus(entry.toStatus) }}</strong>
+                  @if (entry.fromStatus) {
+                    <span class="muted"> from {{ formatStatus(entry.fromStatus) }}</span>
+                  }
+                  <p>{{ entry.notes || 'Status updated' }}</p>
+                  <small>{{ entry.createdAt | date: 'medium' }}</small>
+                </div>
+              </li>
+            }
+          </ol>
+        }
+      </section>
+
+      <section class="detail-section">
+        <div class="section-heading">
+          <h2>Documents</h2>
+          @if (canSubmit) {
+            <button type="button" class="btn btn--primary" (click)="submitForVerification()" [disabled]="submitting">
+              {{ submitting ? 'Submitting…' : 'Submit for verification' }}
+            </button>
+          }
+        </div>
+
+        @if (submitSuccess) {
+          <div class="alert alert--success">{{ submitSuccess }}</div>
+        }
+        @if (submitError) {
+          <div class="alert alert--error">{{ submitError }}</div>
+        }
+
+        @if (!documents.length) {
+          <p class="muted">Upload at least one ownership document, then submit.</p>
+        } @else {
+          <p class="docs-summary">{{ documents.length }} document{{ documents.length === 1 ? '' : 's' }}</p>
+          @if (removeError) {
+            <div class="alert alert--error">{{ removeError }}</div>
+          }
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>File</th>
+                  <th>Size</th>
+                  <th>Status</th>
+                  <th>Uploaded</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (doc of documents; track doc.id) {
+                  <tr [class.row-attention]="doc.status === 'REJECTED' || doc.status === 'MISSING'">
+                    <td>
+                      <strong>{{ doc.title }}</strong>
+                      @if (doc.notes) {
+                        <div class="doc-notes">{{ doc.notes }}</div>
+                      }
+                    </td>
+                    <td>{{ formatStatus(doc.category) }}</td>
+                    <td class="mono">{{ hasFile(doc) ? doc.fileName : 'Not uploaded yet' }}</td>
+                    <td>{{ fileSizeLabel(doc) }}</td>
+                    <td><span class="status-pill" [attr.data-status]="doc.status">{{ formatStatus(doc.status) }}</span></td>
+                    <td>{{ doc.createdAt | date: 'mediumDate' }}</td>
+                    <td class="actions">
+                      @if (hasFile(doc)) {
+                        <a [href]="fileHref(doc)" target="_blank" rel="noopener noreferrer">View</a>
+                      }
+                      @if (needsReupload(doc) && (doc.status === 'REJECTED' || doc.status === 'MISSING')) {
+                        <button type="button" class="link-action" (click)="startReplace(doc)">
+                          {{ doc.status === 'MISSING' ? 'Upload file' : 'Upload replacement' }}
+                        </button>
+                      }
+                      @if (canRemoveDocument(doc)) {
+                        <button
+                          type="button"
+                          class="link-danger"
+                          (click)="removeDocument(doc)"
+                          [disabled]="removingId === doc.id"
+                        >
+                          {{ removingId === doc.id ? 'Removing…' : 'Remove' }}
+                        </button>
+                      } @else if (doc.status === 'VERIFIED') {
+                        <span class="muted-lock" title="Approved documents cannot be removed">Approved</span>
+                      }
+                    </td>
+                  </tr>
+                  @if (replacingId === doc.id) {
+                    <tr class="replace-row">
+                      <td colspan="7">
+                        <div class="replace-box">
+                          <p>
+                            {{ doc.status === 'MISSING' ? 'Upload the requested document:' : 'Upload a corrected file for' }}
+                            <strong>{{ doc.title }}</strong>
+                          </p>
+                          @if (replaceError) {
+                            <div class="alert alert--error">{{ replaceError }}</div>
+                          }
+                          <input type="file" (change)="onReplaceFileSelected($event)" />
+                          <div class="replace-actions">
+                            <button
+                              type="button"
+                              class="btn btn--secondary"
+                              [disabled]="!replaceFile || uploading"
+                              (click)="replaceDocument(doc)"
+                            >
+                              {{ uploading ? 'Uploading…' : 'Submit file' }}
+                            </button>
+                            <button type="button" class="btn btn--ghost" (click)="cancelReplace()">Cancel</button>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        @if (canUploadDocuments) {
+          <form [formGroup]="uploadForm" (ngSubmit)="uploadDocument()" class="upload-form" novalidate>
+            <h3>Upload new document</h3>
+            @if (uploadError) {
+              <div class="alert alert--error">{{ uploadError }}</div>
+            }
+            <div class="form-grid">
+              <label class="field">
+                <span>Category</span>
+                <select formControlName="category">
+                  @for (category of documentCategories; track category) {
+                    <option [value]="category">{{ formatStatus(category) }}</option>
+                  }
+                </select>
+              </label>
+              <label class="field">
+                <span>Title</span>
+                <input type="text" formControlName="title" />
+              </label>
+              <label class="field field--wide">
+                <span>Notes (optional)</span>
+                <input type="text" formControlName="notes" />
+              </label>
+              <label class="field field--wide">
+                <span>File</span>
+                <input type="file" (change)="onFileSelected($event)" />
+              </label>
+            </div>
+            <button type="submit" class="btn btn--secondary" [disabled]="uploading">
+              {{ uploading ? 'Uploading…' : 'Upload document' }}
+            </button>
+          </form>
+        }
+      </section>
+    }
+  </div>
+</section>

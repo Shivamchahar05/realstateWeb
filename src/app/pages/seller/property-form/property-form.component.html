@@ -1,0 +1,153 @@
+<section class="seller-panel">
+  <div class="container">
+    <section class="page-header">
+      <div>
+        <h1>{{ isEditMode ? 'Edit property' : 'Add property' }}</h1>
+        <p>After saving, documents can be uploaded on the property page. Photos and videos can be added here.</p>
+      </div>
+      <a routerLink="/seller/properties" class="btn btn--ghost">Back to list</a>
+    </section>
+
+    @if (loadingProperty) {
+      <p class="state-message">Loading property…</p>
+    } @else {
+      @if (errorMessage) {
+        <div class="alert alert--error">{{ errorMessage }}</div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="property-form" novalidate>
+        <fieldset>
+          <legend>Basics</legend>
+          <div class="form-grid">
+            <label class="field field--wide">
+              <span>Title</span>
+              <input type="text" formControlName="title" />
+            </label>
+            <label class="field field--wide">
+              <span>Description</span>
+              <textarea formControlName="description" rows="4"></textarea>
+            </label>
+            <label class="field">
+              <span>Property type</span>
+              <select formControlName="propertyType">
+                @for (type of propertyTypes; track type) {
+                  <option [value]="type">{{ type.replaceAll('_', ' ') }}</option>
+                }
+              </select>
+            </label>
+            <label class="field">
+              <span>Furnishing</span>
+              <select formControlName="furnishing">
+                @for (status of furnishingStatuses; track status) {
+                  <option [value]="status">{{ status.replaceAll('_', ' ') }}</option>
+                }
+              </select>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Location</legend>
+          <div class="form-grid">
+            <label class="field"><span>City</span><input type="text" formControlName="city" /></label>
+            <label class="field"><span>Locality</span><input type="text" formControlName="locality" /></label>
+            <label class="field field--wide"><span>Address</span><input type="text" formControlName="address" /></label>
+            <label class="field"><span>State</span><input type="text" formControlName="state" /></label>
+            <label class="field"><span>Pincode</span><input type="text" formControlName="pincode" maxlength="6" /></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Specifications</legend>
+          <div class="form-grid">
+            <label class="field"><span>BHK</span><input type="number" formControlName="bhk" min="0" /></label>
+            <label class="field"><span>Carpet area (sq ft)</span><input type="number" formControlName="carpetAreaSqft" min="1" /></label>
+            <label class="field"><span>Built-up area (sq ft)</span><input type="number" formControlName="builtUpAreaSqft" min="1" /></label>
+            <label class="field"><span>Floor</span><input type="number" formControlName="floor" min="0" /></label>
+            <label class="field"><span>Total floors</span><input type="number" formControlName="totalFloors" min="0" /></label>
+            <label class="field"><span>Age (years)</span><input type="number" formControlName="ageYears" min="0" /></label>
+            <label class="field"><span>Parking</span><input type="number" formControlName="parkingSpaces" min="0" /></label>
+            <label class="field field--checkbox">
+              <input type="checkbox" formControlName="readyToMove" />
+              <span>Ready to move</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Pricing</legend>
+          <div class="form-grid">
+            <label class="field"><span>Asking price (INR)</span><input type="number" formControlName="askingPrice" min="1" /></label>
+            <label class="field"><span>Estimated min</span><input type="number" formControlName="estimatedMinPrice" min="1" /></label>
+            <label class="field"><span>Estimated max</span><input type="number" formControlName="estimatedMaxPrice" min="1" /></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Photos &amp; videos</legend>
+          <p class="media-hint">
+            Add property images and walkthrough videos (JPG, PNG, WEBP, MP4, WEBM — max 50 MB each, up to 20 files).
+          </p>
+
+          @if (mediaError) {
+            <div class="alert alert--error">{{ mediaError }}</div>
+          }
+
+          @if (existingMedia.length) {
+            <div class="media-grid">
+              @for (media of existingMedia; track media.id) {
+                <div class="media-tile">
+                  @if (media.type === 'VIDEO') {
+                    <video [src]="mediaHref(media)" controls preload="metadata"></video>
+                  } @else {
+                    <img [src]="mediaHref(media)" [alt]="media.caption || 'Property photo'" />
+                  }
+                  <button
+                    type="button"
+                    class="media-remove"
+                    (click)="removeExisting(media)"
+                    [disabled]="removingMediaId === media.id"
+                  >
+                    Remove
+                  </button>
+                </div>
+              }
+            </div>
+          }
+
+          @if (pendingMedia.length) {
+            <div class="media-grid">
+              @for (item of pendingMedia; track item.previewUrl; let i = $index) {
+                <div class="media-tile pending">
+                  @if (item.kind === 'video') {
+                    <video [src]="item.previewUrl" controls preload="metadata"></video>
+                  } @else {
+                    <img [src]="item.previewUrl" [alt]="item.file.name" />
+                  }
+                  <p class="media-name">{{ item.file.name }}</p>
+                  <button type="button" class="media-remove" (click)="removePending(i)">Remove</button>
+                </div>
+              }
+            </div>
+          }
+
+          <label class="field field--wide media-picker">
+            <span>Upload images / videos</span>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime"
+              multiple
+              (change)="onMediaSelected($event)"
+            />
+          </label>
+        </fieldset>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn--primary" [disabled]="loading">
+            {{ loading ? 'Saving…' : isEditMode ? 'Save changes' : 'Create property' }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</section>

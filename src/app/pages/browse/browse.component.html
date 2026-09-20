@@ -1,0 +1,147 @@
+<section class="browse-page">
+  <div class="browse-hero">
+    <div class="container">
+      <p class="eyebrow">Verified inventory</p>
+      <h1>Find your next home</h1>
+      <p class="lead">Only LIVE listings that cleared legal review and inspection.</p>
+    </div>
+  </div>
+
+  <div class="container browse-body">
+    @if (notice) {
+      <div class="notice-banner">{{ notice }}</div>
+    }
+
+    <form class="filters" (ngSubmit)="applyFilters()">
+      <div class="filter-grid">
+        <label class="span-2">
+          <span>Search</span>
+          <input type="text" [(ngModel)]="filters.search" name="search" placeholder="Project, locality, code…" />
+        </label>
+        <label>
+          <span>City</span>
+          <select [(ngModel)]="filters.city" name="city">
+            <option value="">All cities</option>
+            @for (city of cities; track city) {
+              <option [value]="city">{{ city }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          <span>Locality</span>
+          <input type="text" [(ngModel)]="filters.locality" name="locality" placeholder="e.g. DLF Phase 2" />
+        </label>
+        <label>
+          <span>Type</span>
+          <select [(ngModel)]="filters.propertyType" name="propertyType">
+            <option value="">Any type</option>
+            @for (entry of propertyTypes; track entry[0]) {
+              <option [value]="entry[0]">{{ entry[1] }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          <span>Min budget</span>
+          <input type="number" [(ngModel)]="filters.minPrice" name="minPrice" min="0" placeholder="₹" />
+        </label>
+        <label>
+          <span>Max budget</span>
+          <input type="number" [(ngModel)]="filters.maxPrice" name="maxPrice" min="0" placeholder="₹" />
+        </label>
+      </div>
+      <div class="filter-bar">
+        <div class="quick-cities">
+          @for (city of cities; track city) {
+            <button
+              type="button"
+              class="chip"
+              [class.active]="filters.city === city"
+              (click)="quickCity(city)"
+            >
+              {{ city }}
+            </button>
+          }
+        </div>
+        <div class="filter-actions">
+          <button type="button" class="btn btn-ghost" (click)="clearFilters()">Clear</button>
+          <button type="submit" class="btn btn-primary">Search homes</button>
+        </div>
+      </div>
+    </form>
+
+    @if (loading) {
+      <div class="state-block">
+        <p>Loading verified listings…</p>
+      </div>
+    } @else if (error) {
+      <div class="state-block error">
+        <p>{{ error }}</p>
+      </div>
+    } @else if (properties.length === 0) {
+      <div class="state-block">
+        <h2>No matches</h2>
+        <p>Try another city or clear filters to see all verified homes.</p>
+        <button type="button" class="btn btn-primary" (click)="clearFilters()">Clear filters</button>
+      </div>
+    } @else {
+      <div class="results-head">
+        <h2>{{ total }} verified home{{ total === 1 ? '' : 's' }}</h2>
+        <p>Ready to shortlist — documents and site checks already done.</p>
+      </div>
+
+      <div class="listing-grid">
+        @for (property of properties; track property.id) {
+          <a class="property-card" [routerLink]="['/properties', property.id]">
+            <div class="card-media">
+              <img [src]="coverImage(property)" [alt]="property.title" loading="lazy" />
+              <span class="verified-tag">Verified</span>
+              @if (property.trustScore != null) {
+                <span class="trust-tag">Trust {{ property.trustScore }}</span>
+              }
+            </div>
+            <div class="card-body">
+              <p class="card-price">{{ priceOf(property) | inr }}</p>
+              <h3>{{ property.title }}</h3>
+              <p class="card-loc">{{ property.locality }}, {{ property.city }}</p>
+              <div class="card-specs">
+                <span>{{ typeLabels[property.propertyType] }}</span>
+                @if (property.bhk) {
+                  <span>{{ property.bhk }} BHK</span>
+                }
+                @if (areaLabel(property)) {
+                  <span>{{ areaLabel(property) }}</span>
+                }
+                @if (property.readyToMove) {
+                  <span>Ready to move</span>
+                }
+              </div>
+              <span class="card-cta">View details →</span>
+            </div>
+          </a>
+        }
+      </div>
+
+      @if (totalPages > 1) {
+        <nav class="pagination" aria-label="Pagination">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            [disabled]="filters.page === 1"
+            (click)="goToPage((filters.page ?? 1) - 1)"
+          >
+            Previous
+          </button>
+          <span>Page {{ filters.page }} of {{ totalPages }}</span>
+          <button
+            type="button"
+            class="btn btn-ghost"
+            [disabled]="filters.page === totalPages"
+            (click)="goToPage((filters.page ?? 1) + 1)"
+          >
+            Next
+          </button>
+        </nav>
+      }
+    }
+  </div>
+</section>

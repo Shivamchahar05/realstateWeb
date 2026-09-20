@@ -1,0 +1,156 @@
+<section class="hero">
+  <div class="hero-media" aria-hidden="true"></div>
+  <div class="hero-shade" aria-hidden="true"></div>
+
+  <div class="container hero-inner">
+    <p class="hero-brand fade-up">Verified Property</p>
+    <h1 class="hero-headline fade-up" style="animation-delay: 0.12s">
+      Buy homes that already passed legal &amp; site checks
+    </h1>
+    <p class="hero-support fade-up" style="animation-delay: 0.24s">
+      Search verified inventory across NCR — ownership papers and inspection done before you shortlist.
+    </p>
+
+    <form class="hero-search fade-up" style="animation-delay: 0.36s" (ngSubmit)="search()">
+      <label class="search-field">
+        <span>City</span>
+        <select [(ngModel)]="city" name="city">
+          <option value="Gurgaon">Gurgaon</option>
+          <option value="Noida">Noida</option>
+          <option value="Delhi">Delhi</option>
+          <option value="Faridabad">Faridabad</option>
+        </select>
+      </label>
+      <label class="search-field">
+        <span>Property type</span>
+        <select [(ngModel)]="propertyType" name="propertyType">
+          <option value="">All types</option>
+          @for (entry of propertyTypes; track entry[0]) {
+            <option [value]="entry[0]">{{ entry[1] }}</option>
+          }
+        </select>
+      </label>
+      <label class="search-field">
+        <span>Budget</span>
+        <select [(ngModel)]="budget" name="budget">
+          <option value="">Any budget</option>
+          <option value="50">Under ₹50 L</option>
+          <option value="100">Under ₹1 Cr</option>
+          <option value="200">Under ₹2 Cr</option>
+          <option value="500">Under ₹5 Cr</option>
+        </select>
+      </label>
+      <button type="submit" class="btn btn-primary search-submit">Search</button>
+    </form>
+  </div>
+</section>
+
+<section class="section section-stone">
+  <div class="container">
+    <div class="section-head">
+      <h2>Explore by city</h2>
+      <p>Start where demand and verified stock are strongest.</p>
+    </div>
+    <div class="city-rail">
+      @for (city of cities; track city.name) {
+        <button type="button" class="city-tile" (click)="browseCity(city.name)">
+          <img [src]="city.image" [alt]="city.name" loading="lazy" />
+          <span class="city-tile-copy">
+            <strong>{{ city.name }}</strong>
+            <em>{{ city.tagline }}</em>
+          </span>
+        </button>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="section section-ink">
+  <div class="container">
+    <div class="section-head section-head-light">
+      <h2>Browse by property type</h2>
+      <p>Apartments, villas, houses and plots — filtered to verified listings only.</p>
+    </div>
+    <div class="type-rail">
+      @for (spot of types; track spot.type) {
+        <button type="button" class="type-tile" (click)="browseType(spot.type)">
+          <img [src]="spot.image" [alt]="spot.label" loading="lazy" />
+          <span>{{ spot.label }}</span>
+        </button>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="section section-stone">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2>Verified listings</h2>
+        <p>Fresh LIVE inventory ready for buyer discovery.</p>
+      </div>
+      <a routerLink="/browse" class="text-link">View all</a>
+    </div>
+
+    @if (featuredLoading) {
+      <p class="muted-line">Loading listings…</p>
+    } @else if (!featured.length) {
+      <p class="muted-line">No live listings yet. Check back soon or list a property as a seller.</p>
+    } @else {
+      <div class="listing-rail">
+        @for (property of featured; track property.id) {
+          <a class="listing-row" [routerLink]="['/properties', property.id]">
+            <div class="listing-visual" aria-hidden="true"></div>
+            <div class="listing-body">
+              <p class="listing-price">{{ priceOf(property) | inr }}</p>
+              <h3>{{ property.title }}</h3>
+              <p class="listing-meta">
+                {{ property.locality }}, {{ property.city }}
+                @if (property.bhk) {
+                  · {{ property.bhk }} BHK
+                }
+              </p>
+              @if (property.trustScore) {
+                <p class="listing-trust">Trust score {{ property.trustScore }}</p>
+              }
+            </div>
+          </a>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<section class="section section-verify">
+  <div class="container">
+    <div class="section-head section-head-light">
+      <h2>How verification works</h2>
+      <p>Seller to publish — every step is tracked before a home reaches buyers.</p>
+    </div>
+    <ol class="steps">
+      @for (step of steps; track step.title; let i = $index) {
+        <li class="step">
+          <span class="step-index">0{{ i + 1 }}</span>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.text }}</p>
+        </li>
+      }
+    </ol>
+  </div>
+</section>
+
+<section class="section section-seller">
+  <div class="container seller-band">
+    <div>
+      <h2>Selling a property?</h2>
+      <p>
+        List once, upload documents, and track legal review plus inspection from a single dashboard.
+        Extra papers requested by the lawyer can be added anytime during review.
+      </p>
+    </div>
+    <div class="seller-actions">
+      <a routerLink="/register" class="btn btn-primary">Register as seller</a>
+      <a routerLink="/login" class="btn btn-ghost">Seller sign in</a>
+    </div>
+  </div>
+</section>

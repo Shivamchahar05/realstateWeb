@@ -1,0 +1,96 @@
+<section class="detail-page">
+  <div class="container">
+    <a routerLink="/browse" class="back-link">← Back to listings</a>
+
+    @if (loading) {
+      <p class="status-msg">Loading property...</p>
+    } @else if (error || !property) {
+      <p class="status-msg error">{{ error }}</p>
+    } @else {
+      <header class="detail-header">
+        <div>
+          <p class="detail-code">{{ property.propertyCode }}</p>
+          <h1>{{ property.title }}</h1>
+          <p class="detail-location">{{ property.locality }}, {{ property.city }}</p>
+        </div>
+        <div class="detail-price-block">
+          <span class="detail-price">{{ price() | currency: 'INR' : 'symbol' : '1.0-0' }}</span>
+          @if (property.trustScore != null) {
+            <span class="detail-trust">Trust score {{ property.trustScore }}/100</span>
+          }
+          @if (isVerified()) {
+            <span class="verified-badge">Verified listing</span>
+          }
+        </div>
+      </header>
+
+      @if (photos().length || videos().length) {
+        <div class="media-strip">
+          @for (item of photos(); track item.id) {
+            <figure>
+              <img [src]="mediaSrc(item)" [alt]="item.caption || property.title" loading="lazy" />
+            </figure>
+          }
+          @for (item of videos(); track item.id) {
+            <figure class="media-video">
+              <video [src]="mediaSrc(item)" controls playsinline preload="metadata"></video>
+            </figure>
+          }
+        </div>
+      } @else {
+        <div class="media-strip">
+          <figure>
+            <img [src]="coverImage()" [alt]="property.title" loading="lazy" />
+          </figure>
+        </div>
+      }
+
+      <div class="detail-grid">
+        <section class="detail-main">
+          <h2>About this property</h2>
+          <p class="description">
+            {{ property.description || 'No description provided.' }}
+          </p>
+
+          <dl class="specs">
+            <div><dt>Type</dt><dd>{{ typeLabels[property.propertyType] }}</dd></div>
+            @if (property.bhk) {
+              <div><dt>BHK</dt><dd>{{ property.bhk }}</dd></div>
+            }
+            @if (property.carpetAreaSqft) {
+              <div><dt>Carpet area</dt><dd>{{ property.carpetAreaSqft }} sq ft</dd></div>
+            }
+            @if (property.builtUpAreaSqft) {
+              <div><dt>Built-up area</dt><dd>{{ property.builtUpAreaSqft }} sq ft</dd></div>
+            }
+            @if (property.floor != null && property.totalFloors) {
+              <div><dt>Floor</dt><dd>{{ property.floor }} of {{ property.totalFloors }}</dd></div>
+            }
+            @if (property.furnishing) {
+              <div><dt>Furnishing</dt><dd>{{ property.furnishing.replace('_', ' ') }}</dd></div>
+            }
+            <div><dt>Address</dt><dd>{{ property.address }}</dd></div>
+          </dl>
+        </section>
+
+        <aside class="detail-aside">
+          <h3>Verification</h3>
+          <ul class="verify-list">
+            <li>Status: <strong>{{ property.verificationStatus }}</strong></li>
+            @if (property.lastVerifiedAt) {
+              <li>Last verified: {{ property.lastVerifiedAt | date: 'mediumDate' }}</li>
+            }
+            @if (property.seller) {
+              <li>Listed by: {{ property.seller.fullName }}</li>
+            }
+          </ul>
+
+          @if (property.healthReport?.summary) {
+            <h3>Health report</h3>
+            <p>{{ property.healthReport?.summary }}</p>
+          }
+        </aside>
+      </div>
+    }
+  </div>
+</section>
