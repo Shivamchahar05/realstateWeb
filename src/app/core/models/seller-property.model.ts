@@ -123,6 +123,9 @@ export interface Property {
   parkingSpaces: number | null;
   furnishing: FurnishingStatus | null;
   readyToMove: boolean | null;
+  furnishingsInventory?: Array<{ key: string; qty: number }> | null;
+  amenities?: string[] | null;
+  nearbyPlaces?: Array<{ name: string; distance: string; category: string }> | null;
   askingPrice: number;
   estimatedMinPrice: number | null;
   estimatedMaxPrice: number | null;

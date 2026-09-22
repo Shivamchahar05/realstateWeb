@@ -1,96 +1,267 @@
-<section class="detail-page">
-  <div class="container">
-    <a routerLink="/browse" class="back-link">← Back to listings</a>
+@if (loading) {
+  <section class="detail-page">
+    <div class="container status-wrap">
+      <p class="status-msg">Loading property…</p>
+    </div>
+  </section>
+} @else if (error || !property) {
+  <section class="detail-page">
+    <div class="container status-wrap">
+      <p class="status-msg error">{{ error || 'Property not found.' }}</p>
+      <a routerLink="/browse" class="text-link">Browse verified homes</a>
+    </div>
+  </section>
+} @else {
+  <article class="detail-page">
+    <div class="hero-stage">
+      <img class="hero-image" [src]="heroSrc()" [alt]="property.title" />
+      <div class="hero-shade"></div>
 
-    @if (loading) {
-      <p class="status-msg">Loading property...</p>
-    } @else if (error || !property) {
-      <p class="status-msg error">{{ error }}</p>
-    } @else {
-      <header class="detail-header">
-        <div>
-          <p class="detail-code">{{ property.propertyCode }}</p>
-          <h1>{{ property.title }}</h1>
-          <p class="detail-location">{{ property.locality }}, {{ property.city }}</p>
+      <div class="hero-top container">
+        <a routerLink="/browse" class="back-link">← All listings</a>
+        @if (isVerified()) {
+          <span class="verify-mark">Verified</span>
+        }
+      </div>
+
+      <div class="hero-copy container fade-in">
+        <p class="property-code">{{ property.propertyCode }}</p>
+        <h1>{{ property.title }}</h1>
+        <p class="hero-location">{{ property.locality }}, {{ property.city }}</p>
+        <p class="hero-price">{{ price() | inr }}</p>
+        @if (property.trustScore != null) {
+          <p class="hero-trust">Trust score {{ property.trustScore }}/100</p>
+        }
+      </div>
+    </div>
+
+    @if (photos().length > 1 || videos().length) {
+      <div class="gallery-bar">
+        <div class="container gallery-track">
+          @for (item of photos(); track item.id; let i = $index) {
+            <button
+              type="button"
+              class="thumb"
+              [class.is-active]="!showVideo && activePhotoIndex === i"
+              (click)="selectPhoto(i)"
+            >
+              <img [src]="mediaSrc(item)" [alt]="item.caption || 'Photo ' + (i + 1)" />
+            </button>
+          }
+          @if (videos().length) {
+            <button
+              type="button"
+              class="thumb thumb-video"
+              [class.is-active]="showVideo"
+              (click)="openVideo()"
+            >
+              <span>Video</span>
+            </button>
+          }
         </div>
-        <div class="detail-price-block">
-          <span class="detail-price">{{ price() | currency: 'INR' : 'symbol' : '1.0-0' }}</span>
-          @if (property.trustScore != null) {
-            <span class="detail-trust">Trust score {{ property.trustScore }}/100</span>
-          }
-          @if (isVerified()) {
-            <span class="verified-badge">Verified listing</span>
-          }
-        </div>
-      </header>
-
-      @if (photos().length || videos().length) {
-        <div class="media-strip">
-          @for (item of photos(); track item.id) {
-            <figure>
-              <img [src]="mediaSrc(item)" [alt]="item.caption || property.title" loading="lazy" />
-            </figure>
-          }
-          @for (item of videos(); track item.id) {
-            <figure class="media-video">
-              <video [src]="mediaSrc(item)" controls playsinline preload="metadata"></video>
-            </figure>
-          }
-        </div>
-      } @else {
-        <div class="media-strip">
-          <figure>
-            <img [src]="coverImage()" [alt]="property.title" loading="lazy" />
-          </figure>
-        </div>
-      }
-
-      <div class="detail-grid">
-        <section class="detail-main">
-          <h2>About this property</h2>
-          <p class="description">
-            {{ property.description || 'No description provided.' }}
-          </p>
-
-          <dl class="specs">
-            <div><dt>Type</dt><dd>{{ typeLabels[property.propertyType] }}</dd></div>
-            @if (property.bhk) {
-              <div><dt>BHK</dt><dd>{{ property.bhk }}</dd></div>
-            }
-            @if (property.carpetAreaSqft) {
-              <div><dt>Carpet area</dt><dd>{{ property.carpetAreaSqft }} sq ft</dd></div>
-            }
-            @if (property.builtUpAreaSqft) {
-              <div><dt>Built-up area</dt><dd>{{ property.builtUpAreaSqft }} sq ft</dd></div>
-            }
-            @if (property.floor != null && property.totalFloors) {
-              <div><dt>Floor</dt><dd>{{ property.floor }} of {{ property.totalFloors }}</dd></div>
-            }
-            @if (property.furnishing) {
-              <div><dt>Furnishing</dt><dd>{{ property.furnishing.replace('_', ' ') }}</dd></div>
-            }
-            <div><dt>Address</dt><dd>{{ property.address }}</dd></div>
-          </dl>
-        </section>
-
-        <aside class="detail-aside">
-          <h3>Verification</h3>
-          <ul class="verify-list">
-            <li>Status: <strong>{{ property.verificationStatus }}</strong></li>
-            @if (property.lastVerifiedAt) {
-              <li>Last verified: {{ property.lastVerifiedAt | date: 'mediumDate' }}</li>
-            }
-            @if (property.seller) {
-              <li>Listed by: {{ property.seller.fullName }}</li>
-            }
-          </ul>
-
-          @if (property.healthReport?.summary) {
-            <h3>Health report</h3>
-            <p>{{ property.healthReport?.summary }}</p>
-          }
-        </aside>
       </div>
     }
-  </div>
-</section>
+
+    @if (showVideo && videos()[0]; as video) {
+      <div class="container video-panel slide-up">
+        <video [src]="mediaSrc(video)" controls playsinline preload="metadata"></video>
+      </div>
+    }
+
+    <div class="detail-body">
+      <div class="container body-grid">
+        <div class="main-col">
+          <section class="block slide-up">
+            <h2>About this home</h2>
+            <p class="lede">
+              {{
+                property.description ||
+                  'A verified listing with ownership checks and inspection completed before it reached buyers.'
+              }}
+            </p>
+          </section>
+
+          <section class="block slide-up delay-1">
+            <h2>Property highlights</h2>
+            <dl class="highlights">
+              <div>
+                <dt>Type</dt>
+                <dd>{{ typeLabels[property.propertyType] }}</dd>
+              </div>
+              @if (property.bhk) {
+                <div>
+                  <dt>Configuration</dt>
+                  <dd>{{ property.bhk }} BHK</dd>
+                </div>
+              }
+              @if (property.carpetAreaSqft) {
+                <div>
+                  <dt>Carpet area</dt>
+                  <dd>{{ areaLabel(property.carpetAreaSqft) }}</dd>
+                </div>
+              }
+              @if (property.builtUpAreaSqft) {
+                <div>
+                  <dt>Built-up area</dt>
+                  <dd>{{ areaLabel(property.builtUpAreaSqft) }}</dd>
+                </div>
+              }
+              @if (property.floor != null && property.totalFloors) {
+                <div>
+                  <dt>Floor</dt>
+                  <dd>{{ property.floor }} of {{ property.totalFloors }}</dd>
+                </div>
+              }
+              @if (property.furnishing) {
+                <div>
+                  <dt>Furnishing</dt>
+                  <dd>{{ furnishingStatusLabel(property.furnishing) }}</dd>
+                </div>
+              }
+              @if (property.parkingSpaces != null) {
+                <div>
+                  <dt>Parking</dt>
+                  <dd>{{ property.parkingSpaces }}</dd>
+                </div>
+              }
+              @if (property.readyToMove != null) {
+                <div>
+                  <dt>Possession</dt>
+                  <dd>{{ property.readyToMove ? 'Ready to move' : 'Under construction' }}</dd>
+                </div>
+              }
+            </dl>
+          </section>
+
+          @if (furnishings().length) {
+            <section class="block slide-up delay-1">
+              <h2>Furnishing details</h2>
+              <ul class="feature-tiles">
+                @for (item of furnishings(); track item.key) {
+                  <li>
+                    <span class="tile-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                        <rect x="4" y="6" width="16" height="12" rx="2" />
+                        <path d="M8 10h8M8 14h5" />
+                      </svg>
+                    </span>
+                    <span class="tile-text">
+                      <strong>{{ item.qty }}</strong>
+                      {{ furnishingItemLabel(item.key) }}
+                    </span>
+                  </li>
+                }
+              </ul>
+            </section>
+          }
+
+          @if (allAmenities().length) {
+            <section class="block slide-up delay-2">
+              <h2>Amenities</h2>
+              <div class="amenity-filters">
+                @for (f of amenityFilters; track f.key) {
+                  <button
+                    type="button"
+                    class="filter-btn"
+                    [class.is-active]="amenityFilter === f.key"
+                    (click)="setAmenityFilter(f.key)"
+                  >
+                    {{ f.label }}
+                  </button>
+                }
+              </div>
+              <ul class="feature-tiles amenity-tiles">
+                @for (item of visibleAmenities(); track item.key) {
+                  <li>
+                    <span class="tile-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                        <circle cx="12" cy="12" r="7" />
+                        <path d="M12 9v6M9 12h6" />
+                      </svg>
+                    </span>
+                    <span class="tile-text">{{ item.label }}</span>
+                  </li>
+                }
+                @if (!amenitiesExpanded && hiddenAmenityCount() > 0) {
+                  <li>
+                    <button type="button" class="more-tile" (click)="amenitiesExpanded = true">
+                      +{{ hiddenAmenityCount() }} more
+                    </button>
+                  </li>
+                }
+              </ul>
+            </section>
+          }
+
+          <section class="block slide-up delay-2">
+            <h2>Locality &amp; commute</h2>
+            <p class="address-line">{{ property.address }}</p>
+            <p class="muted-line">
+              {{ property.locality }}, {{ property.city }}
+              @if (property.state) {
+                , {{ property.state }}
+              }
+              @if (property.pincode) {
+                · {{ property.pincode }}
+              }
+            </p>
+            @if (nearbyPlaces().length) {
+              <ul class="nearby-list">
+                @for (place of nearbyPlaces(); track place.name + place.distance) {
+                  <li>
+                    <span class="nearby-cat">{{ nearbyLabel(place.category) }}</span>
+                    <span class="nearby-name">{{ place.name }}</span>
+                    <span class="nearby-dist">{{ place.distance }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          </section>
+        </div>
+
+        <aside class="side-col slide-up delay-1">
+          <div class="enquiry-panel">
+            <p class="panel-label">Asking price</p>
+            <p class="panel-price">{{ price() | inr }}</p>
+            @if (property.estimatedMinPrice && property.estimatedMaxPrice) {
+              <p class="panel-estimate">
+                Est. {{ property.estimatedMinPrice | inr }} – {{ property.estimatedMaxPrice | inr }}
+              </p>
+            }
+            @if (isVerified()) {
+              <p class="panel-note">Legal review and physical inspection completed.</p>
+            }
+            @if (property.seller) {
+              <p class="panel-seller">Listed by {{ property.seller.fullName }}</p>
+            }
+            <a routerLink="/browse" class="btn btn-primary panel-cta">Browse similar homes</a>
+          </div>
+
+          <div class="verify-panel">
+            <h3>Verification</h3>
+            <p><span>Status</span> <strong>{{ statusLabel() }}</strong></p>
+            @if (property.lastVerifiedAt) {
+              <p><span>Verified on</span> <strong>{{ property.lastVerifiedAt | date: 'mediumDate' }}</strong></p>
+            }
+            @if (property.trustScore != null) {
+              <p><span>Trust score</span> <strong>{{ property.trustScore }}/100</strong></p>
+            }
+            @if (property.healthReport?.summary) {
+              <p class="health-summary">{{ property.healthReport?.summary }}</p>
+            }
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div class="sticky-bar">
+      <div class="container sticky-inner">
+        <div>
+          <p class="sticky-title">{{ property.title }}</p>
+          <p class="sticky-meta">{{ property.locality }}, {{ property.city }} · {{ price() | inr }}</p>
+        </div>
+        <a routerLink="/browse" class="btn btn-primary">View more homes</a>
+      </div>
+    </div>
+  </article>
+}
