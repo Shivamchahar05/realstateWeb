@@ -57,6 +57,37 @@
       }
 
       <section class="detail-section">
+        <h2>Buyer interest</h2>
+        <p class="muted" style="margin-bottom: 0.85rem">
+          You can see that buyers are interested and the deal stage. Contact details stay with PropSure.
+        </p>
+        @if (!buyerRequests.length) {
+          <p class="muted">No buyer interest yet on this listing.</p>
+        } @else {
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Interest</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (req of buyerRequests; track req.id) {
+                  <tr>
+                    <td>{{ req.label || 'Buyer interest' }}</td>
+                    <td><span class="status-pill">{{ formatStatus(req.status) }}</span></td>
+                    <td>{{ req.createdAt | date: 'mediumDate' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+      <section class="detail-section">
         <h2>Verification timeline</h2>
         @if (!timeline.length) {
           <p class="muted">No events yet.</p>

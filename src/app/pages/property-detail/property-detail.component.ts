@@ -1,8 +1,12 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CatalogService } from '../../core/api/catalog.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { PROPERTY_TYPE_LABELS, Property, PropertyMedia } from '../../core/models/property.model';
+import { PropertyRequest } from '../../core/models/property-request.model';
+import { PropertyRequestService } from '../../core/services/property-request.service';
 import {
   AMENITY_CATEGORIES,
   amenityMeta,
@@ -18,13 +22,16 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 
 @Component({
   selector: 'app-property-detail',
-  imports: [RouterLink, DatePipe, InrCurrencyPipe],
+  imports: [RouterLink, DatePipe, InrCurrencyPipe, FormsModule],
   templateUrl: './property-detail.component.html',
   styleUrl: './property-detail.component.scss',
 })
 export class PropertyDetailComponent implements OnInit {
   private readonly catalog = inject(CatalogService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
+  private readonly requestsApi = inject(PropertyRequestService);
 
   readonly typeLabels = PROPERTY_TYPE_LABELS;
   readonly amenityFilters = AMENITY_CATEGORIES;
@@ -36,6 +43,13 @@ export class PropertyDetailComponent implements OnInit {
   showVideo = false;
   amenityFilter: string = 'ALL';
   amenitiesExpanded = false;
+
+  requestMessage = '';
+  existingRequest: PropertyRequest | null = null;
+  requestLoading = false;
+  requestSubmitting = false;
+  requestError = '';
+  requestSuccess = false;
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -51,10 +65,77 @@ export class PropertyDetailComponent implements OnInit {
         this.activePhotoIndex = 0;
         this.showVideo = false;
         this.loading = false;
+        this.loadExistingRequest(id);
       },
       error: () => {
         this.error = 'This property is unavailable or no longer listed.';
         this.loading = false;
+      },
+    });
+  }
+
+  private loadExistingRequest(propertyId: string): void {
+    if (!this.auth.isAuthenticated() || !this.auth.isBuyer()) {
+      return;
+    }
+    this.requestLoading = true;
+    this.requestsApi.getForProperty(propertyId).subscribe({
+      next: (res) => {
+        this.existingRequest = res.data;
+        this.requestLoading = false;
+      },
+      error: () => {
+        this.requestLoading = false;
+      },
+    });
+  }
+
+  isBuyer(): boolean {
+    return this.auth.isBuyer();
+  }
+
+  isSeller(): boolean {
+    return this.auth.isSeller();
+  }
+
+  isLoggedIn(): boolean {
+    return this.auth.isAuthenticated();
+  }
+
+  alreadyRequested(): boolean {
+    return !!this.existingRequest;
+  }
+
+  submitRequest(): void {
+    if (!this.property) return;
+
+    if (!this.auth.isAuthenticated()) {
+      void this.router.navigate(['/login'], {
+        queryParams: { returnUrl: `/properties/${this.property.id}` },
+      });
+      return;
+    }
+
+    if (!this.auth.isBuyer()) {
+      this.requestError = 'Only buyer accounts can request a property.';
+      return;
+    }
+
+    this.requestSubmitting = true;
+    this.requestError = '';
+    this.requestsApi.create(this.property.id, this.requestMessage.trim() || undefined).subscribe({
+      next: (res) => {
+        this.existingRequest = res.data;
+        this.requestSuccess = true;
+        this.requestSubmitting = false;
+        this.requestMessage = '';
+      },
+      error: (err) => {
+        this.requestError =
+          err?.error?.error?.message ||
+          err?.error?.message ||
+          'Could not submit request. Please try again.';
+        this.requestSubmitting = false;
       },
     });
   }

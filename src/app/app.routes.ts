@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
-import { sellerGuard } from './core/auth/seller.guard';
+import { buyerGuard, sellerGuard } from './core/auth/seller.guard';
 
 export const routes: Routes = [
   {
@@ -40,6 +40,12 @@ export const routes: Routes = [
         canActivate: [authGuard],
         loadComponent: () =>
           import('./pages/account/account.component').then((m) => m.AccountComponent),
+      },
+      {
+        path: 'my-requests',
+        canActivate: [buyerGuard],
+        loadComponent: () =>
+          import('./pages/my-requests/my-requests.component').then((m) => m.MyRequestsComponent),
       },
       {
         path: 'seller/properties',

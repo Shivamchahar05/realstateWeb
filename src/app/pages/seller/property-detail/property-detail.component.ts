@@ -11,6 +11,8 @@ import {
   VerificationHistoryEntry,
 } from '../../../core/models/seller-property.model';
 import { SellerPropertyService } from '../../../core/services/seller-property.service';
+import { PropertyRequestService } from '../../../core/services/property-request.service';
+import { PropertyRequest } from '../../../core/models/property-request.model';
 import { InrCurrencyPipe } from '../../../shared/pipes/inr-currency.pipe';
 import { environment } from '../../../../environments/environment';
 
@@ -35,12 +37,14 @@ export class PropertyDetailComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly propertyService = inject(SellerPropertyService);
+  private readonly requestService = inject(PropertyRequestService);
 
   readonly documentCategories = DOCUMENT_CATEGORIES;
 
   property: Property | null = null;
   documents: PropertyDocument[] = [];
   timeline: VerificationHistoryEntry[] = [];
+  buyerRequests: PropertyRequest[] = [];
   loading = true;
   uploading = false;
   submitting = false;
@@ -73,10 +77,12 @@ export class PropertyDetailComponent implements OnInit {
     forkJoin({
       property: this.propertyService.get(id),
       documents: this.propertyService.listDocuments(id),
+      requests: this.requestService.listForSellerProperty(id),
     }).subscribe({
-      next: ({ property, documents }) => {
+      next: ({ property, documents, requests }) => {
         this.property = property;
         this.documents = documents;
+        this.buyerRequests = requests.data ?? [];
         this.timeline = [...(property.verificationHistory ?? [])].sort(
           (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
         );

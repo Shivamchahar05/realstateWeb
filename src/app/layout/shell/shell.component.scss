@@ -27,11 +27,12 @@ main {
 
 .brand {
   font-family: var(--font-display);
-  font-size: 1.35rem;
+  font-size: 1.45rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--color-stone);
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .site-nav {
@@ -39,20 +40,16 @@ main {
   align-items: center;
   gap: 1.25rem;
   flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
-.site-nav a,
-.nav-btn {
+.site-nav a {
   position: relative;
   font-size: 0.9rem;
   font-weight: 500;
-  color: rgba(232, 228, 220, 0.82);
+  color: rgba(232, 228, 220, 0.78);
   text-decoration: none;
-  background: none;
-  border: none;
-  cursor: pointer;
   padding: 0.25rem 0;
-  font-family: inherit;
 }
 
 .site-nav a::after {
@@ -68,20 +65,21 @@ main {
   transition: transform 0.25s ease;
 }
 
+.site-nav a:hover,
+.site-nav a.active {
+  color: var(--color-stone);
+}
+
 .site-nav a:hover::after,
 .site-nav a.active::after {
   transform: scaleX(1);
 }
 
-.site-nav a:hover,
-.nav-btn:hover {
-  color: var(--color-stone);
-}
-
 .nav-cta {
   padding: 0.45rem 1rem !important;
-  border: 1px solid rgba(61, 107, 102, 0.6);
+  border: 1px solid rgba(61, 107, 102, 0.55);
   border-radius: 999px;
+  color: var(--color-stone) !important;
   transition: background 0.25s ease, border-color 0.25s ease;
 }
 
@@ -98,9 +96,6 @@ main {
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  margin-left: 0.35rem;
-  padding-left: 0.85rem;
-  border-left: 1px solid rgba(232, 228, 220, 0.15);
 }
 
 .user-chip {
@@ -112,10 +107,6 @@ main {
   padding: 0.2rem 0.35rem 0.2rem 0.2rem;
   border-radius: 999px;
   transition: background 0.2s ease;
-}
-
-.user-chip::after {
-  display: none !important;
 }
 
 .user-chip:hover,
@@ -142,26 +133,27 @@ main {
   display: grid;
   line-height: 1.15;
   text-align: left;
+  padding-right: 0.25rem;
 }
 
 .user-meta strong {
-  font-size: 0.86rem;
+  font-size: 0.84rem;
   font-weight: 600;
 }
 
 .user-meta em {
   font-style: normal;
-  font-size: 0.72rem;
-  color: rgba(232, 228, 220, 0.58);
+  font-size: 0.7rem;
+  color: rgba(232, 228, 220, 0.55);
 }
 
 .logout-btn {
   appearance: none;
-  border: 1px solid rgba(232, 228, 220, 0.28);
+  border: 1px solid rgba(232, 228, 220, 0.22);
   background: transparent;
   color: var(--color-stone);
   font: inherit;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 600;
   padding: 0.4rem 0.75rem;
   border-radius: 999px;
@@ -171,7 +163,7 @@ main {
 
 .logout-btn:hover {
   background: rgba(232, 228, 220, 0.08);
-  border-color: rgba(232, 228, 220, 0.5);
+  border-color: rgba(232, 228, 220, 0.4);
 }
 
 .footer-logout {
@@ -180,7 +172,7 @@ main {
   background: none;
   padding: 0;
   text-align: left;
-  color: rgba(232, 228, 220, 0.78);
+  color: rgba(232, 228, 220, 0.7);
   font: inherit;
   font-size: 0.9rem;
   cursor: pointer;
@@ -195,6 +187,7 @@ main {
   background: #07131f;
   border-top: 1px solid rgba(232, 228, 220, 0.08);
   padding: 2.75rem 0;
+  color: var(--color-stone);
 }
 
 .footer-grid {
@@ -212,7 +205,7 @@ main {
 
 .footer-copy,
 .footer-meta p {
-  color: rgba(232, 228, 220, 0.55);
+  color: rgba(232, 228, 220, 0.58);
   font-size: 0.875rem;
   line-height: 1.55;
 }
@@ -237,16 +230,17 @@ main {
   .header-inner {
     flex-direction: column;
     align-items: flex-start;
-    padding-top: 0.75rem;
-    padding-bottom: 0.75rem;
+    padding-top: 0.85rem;
+    padding-bottom: 0.85rem;
   }
 
-  .user-menu {
-    margin-left: 0;
-    padding-left: 0;
-    border-left: 0;
+  .site-nav {
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-start;
+  }
+
+  .user-meta {
+    display: none;
   }
 
   .footer-grid {

@@ -1,5 +1,5 @@
 export const environment = {
-  production: false,
+  production: true,
   apiUrl: 'https://propsure-k6fu.onrender.com/api',
   assetsUrl: 'https://propsure-k6fu.onrender.com',
 };

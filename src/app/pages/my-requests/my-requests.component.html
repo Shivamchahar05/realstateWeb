@@ -1,0 +1,50 @@
+<section class="requests-page">
+  <div class="container">
+    <header class="page-head">
+      <div>
+        <p class="eyebrow">Buyer</p>
+        <h1>My property requests</h1>
+        <p class="lead">Track your interest from request → visit → token → deal.</p>
+      </div>
+      <a routerLink="/browse" class="btn btn-ghost">Browse more homes</a>
+    </header>
+
+    @if (loading) {
+      <p class="muted">Loading requests…</p>
+    } @else if (error) {
+      <p class="error">{{ error }}</p>
+    } @else if (!items.length) {
+      <div class="empty">
+        <h2>No requests yet</h2>
+        <p>Open a verified listing and tap “Request this property”.</p>
+        <a routerLink="/browse" class="btn btn-primary">Browse verified homes</a>
+      </div>
+    } @else {
+      <div class="request-list">
+        @for (item of items; track item.id) {
+          <article class="request-card">
+            <div class="request-main">
+              <p class="code">{{ item.property?.propertyCode || '—' }}</p>
+              <h2>
+                <a [routerLink]="['/properties', item.propertyId]">
+                  {{ item.property?.title || 'Property' }}
+                </a>
+              </h2>
+              <p class="meta">
+                {{ item.property?.locality }}, {{ item.property?.city }}
+                · {{ priceOf(item.property?.askingPrice) | inr }}
+              </p>
+              @if (item.message) {
+                <p class="message">“{{ item.message }}”</p>
+              }
+            </div>
+            <div class="request-side">
+              <span class="status" [attr.data-status]="item.status">{{ statusLabel(item.status) }}</span>
+              <time>{{ item.createdAt | date: 'mediumDate' }}</time>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </div>
+</section>

@@ -234,7 +234,55 @@
             @if (property.seller) {
               <p class="panel-seller">Listed by {{ property.seller.fullName }}</p>
             }
-            <a routerLink="/browse" class="btn btn-primary panel-cta">Browse similar homes</a>
+
+            @if (alreadyRequested() || requestSuccess) {
+              <div class="request-done">
+                <p class="done-title">Request submitted</p>
+                <p class="done-copy">
+                  PropSure has your interest. Our team will follow up with next steps.
+                </p>
+                <a routerLink="/my-requests" class="btn btn-ghost panel-cta">View my requests</a>
+              </div>
+            } @else if (isSeller()) {
+              <p class="panel-note">Sellers cannot request listings. Switch to a buyer account to enquire.</p>
+              <a routerLink="/browse" class="btn btn-primary panel-cta">Browse similar homes</a>
+            } @else {
+              <label class="request-field">
+                <span>Message (optional)</span>
+                <textarea
+                  rows="3"
+                  [(ngModel)]="requestMessage"
+                  name="requestMessage"
+                  maxlength="1000"
+                  placeholder="Tell us your budget, timeline, or preferred visit slot"
+                ></textarea>
+              </label>
+              @if (requestError) {
+                <p class="request-error">{{ requestError }}</p>
+              }
+              <button
+                type="button"
+                class="btn btn-primary panel-cta"
+                [disabled]="requestSubmitting || requestLoading"
+                (click)="submitRequest()"
+              >
+                @if (requestSubmitting) {
+                  Sending…
+                } @else if (!isLoggedIn()) {
+                  Sign in to request
+                } @else {
+                  Request this property
+                }
+              </button>
+              @if (!isLoggedIn()) {
+                <p class="panel-hint">
+                  New here?
+                  <a routerLink="/register" [queryParams]="{ role: 'BUYER', returnUrl: '/properties/' + property.id }"
+                    >Create a buyer account</a
+                  >
+                </p>
+              }
+            }
           </div>
 
           <div class="verify-panel">
@@ -260,7 +308,20 @@
           <p class="sticky-title">{{ property.title }}</p>
           <p class="sticky-meta">{{ property.locality }}, {{ property.city }} · {{ price() | inr }}</p>
         </div>
-        <a routerLink="/browse" class="btn btn-primary">View more homes</a>
+        @if (alreadyRequested() || requestSuccess) {
+          <a routerLink="/my-requests" class="btn btn-primary">View my requests</a>
+        } @else if (!isSeller()) {
+          <button
+            type="button"
+            class="btn btn-primary"
+            [disabled]="requestSubmitting"
+            (click)="submitRequest()"
+          >
+            {{ isLoggedIn() ? 'Request this property' : 'Sign in to request' }}
+          </button>
+        } @else {
+          <a routerLink="/browse" class="btn btn-primary">View more homes</a>
+        }
       </div>
     </div>
   </article>

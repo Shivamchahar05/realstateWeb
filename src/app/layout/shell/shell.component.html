@@ -1,8 +1,11 @@
 <header class="site-header">
   <div class="container header-inner">
-    <a routerLink="/" class="brand">Verified Property</a>
+    <a routerLink="/" class="brand">PropSure</a>
     <nav class="site-nav">
       <a routerLink="/browse" routerLinkActive="active">Buy</a>
+      @if (auth.isAuthenticated() && auth.isBuyer()) {
+        <a routerLink="/my-requests" routerLinkActive="active">My requests</a>
+      }
       @if (auth.isAuthenticated() && auth.isSeller()) {
         <a routerLink="/seller/properties" routerLinkActive="active">My properties</a>
         <a routerLink="/seller/properties/new" routerLinkActive="active">Sell</a>
@@ -38,7 +41,7 @@
 <footer class="site-footer">
   <div class="container footer-grid">
     <div>
-      <p class="footer-brand">Verified Property</p>
+      <p class="footer-brand">PropSure</p>
       <p class="footer-copy">Verified homes for buyers. Structured listing for sellers across NCR.</p>
     </div>
     <div class="footer-links">
