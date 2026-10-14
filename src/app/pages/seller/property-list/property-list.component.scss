@@ -1,4 +1,151 @@
-/* styles live under .seller-panel in styles.scss */
 :host {
   display: block;
+}
+
+.seller-panel {
+  background: #f3f1ec;
+  color: #132536;
+}
+
+.seller-panel .btn--primary {
+  background: #173528;
+  border-color: #173528;
+  color: #f7f5f1;
+}
+
+.seller-panel .btn--primary:hover {
+  background: #234843;
+}
+
+.seller-panel .btn--ghost,
+.seller-panel .pagination .btn {
+  background: #fff;
+  color: #132536;
+  border-color: rgba(19, 37, 54, 0.2);
+}
+
+.page-header h1 {
+  font-size: clamp(2rem, 3vw, 2.6rem);
+}
+
+.search-field {
+  max-width: 28rem;
+}
+
+.search-field input {
+  border-radius: 12px;
+  border-color: rgba(19, 37, 54, 0.14);
+  padding: 0.75rem 0.85rem;
+}
+
+.listing-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.listing-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) auto auto;
+  gap: 1rem 1.25rem;
+  align-items: center;
+  padding: 1rem 1.1rem;
+  background: #fff;
+  border: 1px solid rgba(19, 37, 54, 0.08);
+  border-radius: 16px;
+}
+
+.code {
+  margin: 0;
+  color: #5c6b78;
+  font-size: 0.75rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+}
+
+.listing-card h2 {
+  margin: 0.15rem 0 0.2rem;
+  font-size: 1.35rem;
+  line-height: 1.2;
+}
+
+.where {
+  margin: 0;
+  color: #4a5d6c;
+  font-size: 0.9rem;
+}
+
+.price {
+  margin: 0.35rem 0 0;
+  color: #2f5d56;
+  font-weight: 750;
+}
+
+.listing-status {
+  display: grid;
+  justify-items: end;
+  gap: 0.4rem;
+}
+
+.updated {
+  margin: 0.15rem 0 0;
+  color: #5c6b78;
+  font-size: 0.8rem;
+}
+
+.status-pill[data-tone='good'] {
+  background: #e5f3ec;
+  color: #14532d;
+}
+
+.status-pill[data-tone='progress'] {
+  background: #fff4d6;
+  color: #7a4b00;
+}
+
+.status-pill[data-tone='warn'] {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.status-pill[data-tone='bad'] {
+  background: #fde8e8;
+  color: #9b1c1c;
+}
+
+.status-pill[data-tone='draft'] {
+  background: #eef1f4;
+  color: #475569;
+}
+
+.listing-actions {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.listing-actions .btn {
+  min-height: 2.55rem;
+  min-width: 4.6rem;
+}
+
+.pagination .btn {
+  min-height: 2.5rem;
+}
+
+.pagination .btn:disabled {
+  background: #f7f5f1;
+}
+
+@media (max-width: 800px) {
+  .page-header {
+    flex-direction: column;
+  }
+
+  .listing-card,
+  .listing-status {
+    justify-items: start;
+  }
+
+  .listing-card {
+    grid-template-columns: 1fr;
+  }
 }

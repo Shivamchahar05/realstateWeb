@@ -100,19 +100,30 @@
       <div class="listing-rail">
         @for (property of featured; track property.id) {
           <a class="listing-row" [routerLink]="['/properties', property.id]">
-            <div class="listing-visual" aria-hidden="true"></div>
+            <img class="listing-visual" [src]="cover(property)" [alt]="property.title" />
             <div class="listing-body">
-              <p class="listing-price">{{ priceOf(property) | inr }}</p>
+              <p class="listing-price">
+                @if (property.propertyType === 'SOCIETY' && property.estimatedMinPrice && property.estimatedMaxPrice) {
+                  {{ property.estimatedMinPrice | inr }} – {{ property.estimatedMaxPrice | inr }}
+                } @else {
+                  {{ priceOf(property) | inr }}
+                }
+              </p>
               <h3>{{ property.title }}</h3>
               <p class="listing-meta">
                 {{ property.locality }}, {{ property.city }}
-                @if (property.bhk) {
+                @if (property.propertyType === 'SOCIETY' && property.bhkConfigurations?.length) {
+                  · {{ property.bhkConfigurations!.join(', ') }} BHK
+                } @else if (property.bhk) {
                   · {{ property.bhk }} BHK
                 }
               </p>
+            </div>
+            <div class="listing-side">
               @if (property.trustScore) {
-                <p class="listing-trust">Trust score {{ property.trustScore }}</p>
+                <span class="listing-trust">Trust {{ property.trustScore }}</span>
               }
+              <span class="listing-go">View details</span>
             </div>
           </a>
         }
@@ -121,16 +132,98 @@
   </div>
 </section>
 
+<section class="section section-stone">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2>Before you shortlist</h2>
+        <p>Check stamp duty, what your income can buy, and what verified homes in that city cost.</p>
+      </div>
+    </div>
+    <div class="tool-rail">
+      <a routerLink="/stamp-duty" class="tool-card">
+        <span>Calculator</span>
+        <strong>Stamp duty</strong>
+        <em>Gurgaon, Noida, Delhi and Faridabad rates for male, female and joint buyers.</em>
+      </a>
+      <a routerLink="/affordability" class="tool-card">
+        <span>Income</span>
+        <strong>Affordability</strong>
+        <em>Turn monthly income and a down payment into a home budget.</em>
+      </a>
+      <a routerLink="/price-insights" class="tool-card">
+        <span>Market</span>
+        <strong>Price insights</strong>
+        <em>Lowest, typical and highest asking prices from live verified homes.</em>
+      </a>
+    </div>
+  </div>
+</section>
+
+@if (guides.length) {
+  <section class="section section-stone">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <h2>From the blog</h2>
+          <p>Short guides before you shortlist a home.</p>
+        </div>
+        <a routerLink="/blog" class="text-link">All guides</a>
+      </div>
+      <div class="guide-rail">
+        @for (post of guides; track post.id) {
+          <a class="guide-card" [routerLink]="['/blog', post.slug]">
+            <img [src]="guideCover(post)" [alt]="post.title" />
+            <span>
+              <em>{{ post.category }}</em>
+              <strong>{{ post.title }}</strong>
+            </span>
+          </a>
+        }
+      </div>
+    </div>
+  </section>
+}
+
 <section class="section section-verify">
   <div class="container">
-    <div class="section-head section-head-light">
+    <div class="section-head">
       <h2>How verification works</h2>
-      <p>Seller to publish — every step is tracked before a home reaches buyers.</p>
+      <p>Every step is tracked before a home reaches buyers.</p>
     </div>
     <ol class="steps">
       @for (step of steps; track step.title; let i = $index) {
         <li class="step">
-          <span class="step-index">0{{ i + 1 }}</span>
+          <div class="step-mark">
+            <span class="step-icon" aria-hidden="true">
+              @switch (step.icon) {
+                @case ('home') {
+                  <svg viewBox="0 0 24 24">
+                    <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z" />
+                  </svg>
+                }
+                @case ('document') {
+                  <svg viewBox="0 0 24 24">
+                    <path d="M7 3.5h7.2L19 8.2V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z" />
+                    <path d="M14 3.8V8.5h4.6M9 13h6M9 16.5h4" />
+                  </svg>
+                }
+                @case ('inspection') {
+                  <svg viewBox="0 0 24 24">
+                    <rect x="6" y="3.5" width="12" height="17" rx="1.6" />
+                    <path d="M9 3.5h6v3H9zM9 12.2l2 2 4-4.2" />
+                  </svg>
+                }
+                @case ('publish') {
+                  <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="8" />
+                    <path d="M8.4 12.2 11 14.7l4.6-5.2" />
+                  </svg>
+                }
+              }
+            </span>
+            <span class="step-index">0{{ i + 1 }}</span>
+          </div>
           <h3>{{ step.title }}</h3>
           <p>{{ step.text }}</p>
         </li>

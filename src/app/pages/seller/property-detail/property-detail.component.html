@@ -29,8 +29,14 @@
           <span class="status-pill status-pill--muted">{{ formatStatus(property.listingStatus) }}</span>
         </div>
         <div>
-          <span class="label">Asking price</span>
-          <strong>{{ property.askingPrice | inr }}</strong>
+          <span class="label">{{ property.propertyType === 'SOCIETY' ? 'Price range' : 'Asking price' }}</span>
+          <strong>
+            @if (property.propertyType === 'SOCIETY' && property.estimatedMinPrice && property.estimatedMaxPrice) {
+              {{ property.estimatedMinPrice | inr }} – {{ property.estimatedMaxPrice | inr }}
+            } @else {
+              {{ property.askingPrice | inr }}
+            }
+          </strong>
         </div>
       </div>
 
@@ -54,6 +60,18 @@
           <strong>Legal review in progress</strong>
           <p>If the lawyer requests more papers, they will appear below for upload.</p>
         </div>
+      }
+
+      @if (property.propertyType === 'SOCIETY') {
+        <section class="detail-section">
+          <h2>Society</h2>
+          <p>
+            @if (property.reraNumber) { RERA {{ property.reraNumber }} · }
+            @if (property.totalTowers) { {{ property.totalTowers }} towers · }
+            @if (property.totalUnits) { {{ property.totalUnits }} units · }
+            @if (property.bhkConfigurations?.length) { {{ property.bhkConfigurations!.join(', ') }} BHK }
+          </p>
+        </section>
       }
 
       <section class="detail-section">

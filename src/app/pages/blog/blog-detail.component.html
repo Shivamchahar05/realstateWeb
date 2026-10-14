@@ -1,0 +1,48 @@
+<section class="article-page">
+  <div class="container">
+    @if (loading()) {
+      <p class="muted">Loading article…</p>
+    } @else if (missing() || !post()) {
+      <p class="muted">This article is not available.</p>
+      <a routerLink="/blog">Back to blog</a>
+    } @else {
+      @if (post(); as article) {
+        <a class="back" routerLink="/blog">All guides</a>
+        <p class="eyebrow">{{ article.category }}</p>
+        <h1>{{ article.title }}</h1>
+        <p class="byline">
+          {{ article.authorName }}
+          @if (article.publishedAt) {
+            · {{ article.publishedAt | date: 'mediumDate' }}
+          }
+        </p>
+        <img class="hero" [src]="cover(article.coverImageUrl)" [alt]="article.title" />
+        <p class="excerpt">{{ article.excerpt }}</p>
+        <div class="body">
+          @for (para of paragraphs(article.body); track $index) {
+            <p>{{ para }}</p>
+          }
+        </div>
+        @if (article.sourceUrl) {
+          <p class="source">
+            <a [href]="article.sourceUrl" target="_blank" rel="noopener noreferrer">Read the full story on ET Realty</a>
+          </p>
+        }
+        @if (areaLink(article); as link) {
+          <p class="area">
+            Homes in this area:
+            <a [routerLink]="link">{{ article.locality }}, {{ article.city }}</a>
+          </p>
+        }
+        @if (article.related.length) {
+          <h2>More guides</h2>
+          <div class="related">
+            @for (item of article.related; track item.id) {
+              <a [routerLink]="['/blog', item.slug]">{{ item.title }}</a>
+            }
+          </div>
+        }
+      }
+    }
+  </div>
+</section>

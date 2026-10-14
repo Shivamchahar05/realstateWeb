@@ -1,0 +1,103 @@
+<section class="tool-page">
+  <div class="tool-wrap">
+    <button type="button" class="back" (click)="goBack()">← Back</button>
+    <p class="eyebrow">Buyer tools</p>
+    <h1>Affordability</h1>
+    <p class="lead">
+      See the home price your take-home pay can support. The EMI is kept to half of income left after other loans.
+    </p>
+
+    <div class="duty-layout">
+      <form class="panel" (submit)="$event.preventDefault()">
+        <p class="field-label">City</p>
+        <div class="pills">
+          @for (name of cities; track name) {
+            <button type="button" [class.is-on]="city() === name" (click)="city.set(name)">{{ name }}</button>
+          }
+        </div>
+
+        <label class="price-field">
+          <span class="field-label">Monthly take-home</span>
+          <input type="number" min="0" step="5000" [value]="income() || ''" (input)="setAmount('income', $any($event.target).value)" />
+          @if (income() > 0) {
+            <em class="price-readout">{{ income() | inr }} / month</em>
+          }
+        </label>
+        <div class="pills presets">
+          @for (preset of incomePresets; track preset.value) {
+            <button type="button" [class.is-on]="income() === preset.value" (click)="income.set(preset.value)">
+              {{ preset.label }}
+            </button>
+          }
+        </div>
+
+        <label class="price-field">
+          <span class="field-label">Other monthly EMIs</span>
+          <input type="number" min="0" step="1000" [value]="otherEmi() || ''" (input)="setAmount('otherEmi', $any($event.target).value)" />
+        </label>
+
+        <label class="price-field">
+          <span class="field-label">Down payment</span>
+          <input
+            type="number"
+            min="0"
+            step="100000"
+            [value]="downPayment() || ''"
+            (input)="setAmount('downPayment', $any($event.target).value)"
+          />
+          @if (downPayment() > 0) {
+            <em class="price-readout">{{ downPayment() | inr }}</em>
+          }
+        </label>
+
+        <div class="split">
+          <label class="price-field">
+            <span class="field-label">Interest % / year</span>
+            <input type="number" min="0" step="0.1" [value]="rate()" (input)="setRate($any($event.target).value)" />
+          </label>
+          <label class="price-field">
+            <span class="field-label">Tenure (years)</span>
+            <input type="number" min="1" max="30" [value]="years()" (input)="setYears($any($event.target).value)" />
+          </label>
+        </div>
+
+        <p class="note">
+          Banks also look at credit score and job type. This is a planning estimate, not a loan sanction.
+        </p>
+      </form>
+
+      <aside class="result">
+        <p class="result-kicker">{{ city() }} · {{ years() }} years at {{ rate() }}%</p>
+        <p class="result-total">{{ result().budget | inr }}</p>
+        <p class="result-caption">Home budget</p>
+        <ul>
+          <li>
+            <span>Monthly EMI cap</span>
+            <strong>{{ result().emi | inr }}</strong>
+          </li>
+          <li>
+            <span>Loan amount</span>
+            <strong>{{ result().loan | inr }}</strong>
+          </li>
+          <li>
+            <span>Down payment</span>
+            <strong>{{ downPayment() | inr }}</strong>
+          </li>
+        </ul>
+        @if (targetPrice() > 0) {
+          <p class="save">
+            @if (result().gap <= 0) {
+              This home fits the estimate.
+            } @else {
+              This home is {{ result().gap | inr }} above the estimate.
+            }
+          </p>
+        }
+        <div class="result-links">
+          <a [routerLink]="['/browse']" [queryParams]="{ city: city(), maxPrice: result().budget }">See homes in this budget</a>
+          <a [routerLink]="['/stamp-duty']" [queryParams]="{ city: city(), price: result().budget }">Estimate stamp duty</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

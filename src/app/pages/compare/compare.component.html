@@ -1,0 +1,86 @@
+<section class="compare-page">
+  <div class="container">
+    <header class="compare-head">
+      <div>
+        <p class="eyebrow">Shortlist</p>
+        <h1>Compare homes</h1>
+        <p>Up to 3 verified listings, side by side.</p>
+      </div>
+      <a routerLink="/browse" class="text-link">Back to browse</a>
+    </header>
+
+    @if (loading) {
+      <p class="muted">Loading comparison…</p>
+    } @else if (!properties.length) {
+      <div class="empty">
+        <p>No homes selected yet. Open a listing and choose Compare.</p>
+        <a routerLink="/browse" class="btn btn-primary">Browse homes</a>
+      </div>
+    } @else {
+      <div class="compare-table" [style.--cols]="properties.length">
+        <div class="compare-row compare-head-row">
+          <div></div>
+          @for (property of properties; track property.id) {
+            <div class="compare-home">
+              <a [routerLink]="['/properties', property.id]">{{ property.title }}</a>
+              <button type="button" class="text-link" (click)="remove(property.id)">Remove</button>
+            </div>
+          }
+        </div>
+
+        <div class="compare-row">
+          <div class="row-label">Price</div>
+          @for (property of properties; track property.id) {
+            <div>
+              @if (property.propertyType === 'SOCIETY' && property.estimatedMinPrice && property.estimatedMaxPrice) {
+                {{ property.estimatedMinPrice | inr }} – {{ property.estimatedMaxPrice | inr }}
+              } @else {
+                {{ property.askingPrice | inr }}
+              }
+            </div>
+          }
+        </div>
+        <div class="compare-row">
+          <div class="row-label">Type</div>
+          @for (property of properties; track property.id) {
+            <div>{{ typeLabel(property) }}</div>
+          }
+        </div>
+        <div class="compare-row">
+          <div class="row-label">Configuration</div>
+          @for (property of properties; track property.id) {
+            <div>{{ config(property) }}</div>
+          }
+        </div>
+        <div class="compare-row">
+          <div class="row-label">Area</div>
+          @for (property of properties; track property.id) {
+            <div>{{ area(property) }}</div>
+          }
+        </div>
+        <div class="compare-row">
+          <div class="row-label">Locality</div>
+          @for (property of properties; track property.id) {
+            <div>
+              <a [routerLink]="['/localities', property.city, property.locality]">
+                {{ property.locality }}, {{ property.city }}
+              </a>
+            </div>
+          }
+        </div>
+        <div class="compare-row">
+          <div class="row-label">Trust score</div>
+          @for (property of properties; track property.id) {
+            <div>{{ trust(property) }}</div>
+          }
+        </div>
+        <div class="compare-row">
+          <div class="row-label">Amenities</div>
+          @for (property of properties; track property.id) {
+            <div>{{ amenities(property) }}</div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</section>

@@ -1,8 +1,51 @@
-<header class="site-header">
+<header class="site-header" [class.menu-open]="menuOpen()">
+  @if (menuOpen()) {
+    <button type="button" class="nav-backdrop" aria-label="Close menu" (click)="closeMenu()"></button>
+  }
   <div class="container header-inner">
     <a routerLink="/" class="brand">PropSure</a>
-    <nav class="site-nav">
+    <button
+      type="button"
+      class="menu-toggle"
+      (click)="toggleMenu()"
+      [attr.aria-expanded]="menuOpen()"
+      [attr.aria-label]="menuOpen() ? 'Close menu' : 'Open menu'"
+    >
+      @if (menuOpen()) {
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      } @else {
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" />
+        </svg>
+      }
+    </button>
+    <nav class="site-nav" [class.is-open]="menuOpen()" id="site-menu" (click)="onNavClick($event)">
+      <div class="drawer-head">
+        <span>Menu</span>
+        <button type="button" class="drawer-close" (click)="closeMenu()">Close</button>
+      </div>
       <a routerLink="/browse" routerLinkActive="active">Buy</a>
+      <a routerLink="/blog" routerLinkActive="active">Blog</a>
+      <a
+        class="saved-nav"
+        routerLink="/saved"
+        routerLinkActive="active"
+        title="Saved homes"
+        [attr.aria-label]="'Saved homes, ' + library.savedIds().length"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true" [class.is-on]="library.savedIds().length > 0">
+          <path
+            d="M12 20.5s-7-4.4-9.2-8.4C1 9.2 1.5 5.8 4.1 4.3 6.4 3 9 3.7 12 6.8c3-3.1 5.6-3.8 7.9-2.5 2.6 1.5 3.1 4.9 1.3 7.8C19 16.1 12 20.5 12 20.5z"
+          />
+        </svg>
+        <span class="saved-label">Saved</span>
+        <span class="saved-count">{{ library.savedIds().length }}</span>
+      </a>
+      @if (library.compareIds().length) {
+        <a routerLink="/compare" routerLinkActive="active">Compare ({{ library.compareIds().length }})</a>
+      }
       @if (auth.isAuthenticated() && auth.isBuyer()) {
         <a routerLink="/my-requests" routerLinkActive="active">My requests</a>
       }
@@ -34,18 +77,32 @@
   </div>
 </header>
 
-<main>
+<main [class.has-compare]="library.compareIds().length">
   <router-outlet />
 </main>
+
+@if (library.compareIds().length) {
+  <div class="compare-dock">
+    <span>{{ library.compareIds().length }} home{{ library.compareIds().length === 1 ? '' : 's' }} selected</span>
+    <a routerLink="/compare" class="btn btn-primary">Compare</a>
+    <button type="button" class="btn btn-ghost" (click)="library.clearCompare()">Clear</button>
+  </div>
+}
 
 <footer class="site-footer">
   <div class="container footer-grid">
     <div>
       <p class="footer-brand">PropSure</p>
       <p class="footer-copy">Verified homes for buyers. Structured listing for sellers across NCR.</p>
+      <p class="footer-cities">Gurgaon · Noida · Delhi · Faridabad</p>
     </div>
     <div class="footer-links">
+      <p class="footer-label">Explore</p>
       <a routerLink="/browse">Browse listings</a>
+      <a routerLink="/stamp-duty">Stamp duty</a>
+      <a routerLink="/affordability">Affordability</a>
+      <a routerLink="/price-insights">Price insights</a>
+      <a routerLink="/blog">Blog</a>
       @if (auth.isAuthenticated()) {
         <a routerLink="/account">My profile</a>
         <button type="button" class="footer-logout" (click)="logout()">Logout</button>
@@ -54,9 +111,12 @@
         <a routerLink="/login">Sign in</a>
       }
     </div>
-    <div class="footer-meta">
-      <p>Gurgaon · Noida · Delhi · Faridabad</p>
-      <p>Documents → Inspection → Publish</p>
+    <div class="footer-links">
+      <p class="footer-label">Company</p>
+      <a routerLink="/about">About</a>
+      <a routerLink="/contact">Contact</a>
+      <a routerLink="/privacy">Privacy</a>
+      <a routerLink="/terms">Terms</a>
     </div>
   </div>
 </footer>

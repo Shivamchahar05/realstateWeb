@@ -1,3 +1,24 @@
 :host {
   display: block;
 }
+
+.config-picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.config-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid #d9d3c7;
+  border-radius: 999px;
+  background: #f7f4ef;
+}
+
+.config-pick input {
+  width: auto;
+}

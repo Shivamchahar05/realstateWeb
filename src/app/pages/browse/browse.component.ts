@@ -10,6 +10,7 @@ import {
 } from '../../core/models/property.model';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 import { propertyCoverImage } from '../../shared/property-media';
+import { BuyerLibraryService } from '../../core/services/buyer-library.service';
 
 @Component({
   selector: 'app-browse',
@@ -21,6 +22,7 @@ export class BrowseComponent implements OnInit {
   private readonly catalog = inject(CatalogService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  readonly library = inject(BuyerLibraryService);
 
   readonly propertyTypes = Object.entries(PROPERTY_TYPE_LABELS) as [PropertyType, string][];
   readonly typeLabels = PROPERTY_TYPE_LABELS;
@@ -103,6 +105,25 @@ export class BrowseComponent implements OnInit {
         search: this.filters.search || null,
       },
     });
+  }
+
+  save(property: Property): void {
+    const result = this.library.toggleSave(property);
+    if (result === 'login') {
+      void this.router.navigate(['/login'], { queryParams: { returnUrl: '/browse' } });
+      return;
+    }
+    this.notice = result === 'saved' ? 'Saved to your homes.' : 'Removed from saved homes.';
+  }
+
+  compare(property: Property): void {
+    const result = this.library.toggleCompare(property.id);
+    this.notice =
+      result === 'full'
+        ? 'Compare holds 3 homes. Remove one before adding another.'
+        : result === 'added'
+          ? 'Added to compare.'
+          : 'Removed from compare.';
   }
 
   priceOf(property: Property): number {

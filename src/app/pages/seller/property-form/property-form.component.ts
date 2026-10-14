@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -25,7 +25,7 @@ interface PendingMedia {
   templateUrl: './property-form.component.html',
   styleUrl: './property-form.component.scss',
 })
-export class PropertyFormComponent implements OnInit {
+export class PropertyFormComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly propertyService = inject(SellerPropertyService);
   private readonly route = inject(ActivatedRoute);
@@ -33,6 +33,19 @@ export class PropertyFormComponent implements OnInit {
 
   readonly propertyTypes = PROPERTY_TYPES;
   readonly furnishingStatuses = FURNISHING_STATUSES;
+  readonly bhkOptions = [1, 2, 3, 4, 5];
+  readonly typeLabels: Record<PropertyType, string> = {
+    APARTMENT: 'Apartment',
+    VILLA: 'Villa',
+    INDEPENDENT_HOUSE: 'Independent house',
+    PLOT: 'Plot',
+    COMMERCIAL: 'Commercial',
+    SOCIETY: 'Society',
+    OTHER: 'Other',
+  };
+
+  selectedBhks: number[] = [];
+  private typeWatch?: { unsubscribe(): void };
 
   propertyId: string | null = null;
   loading = false;
@@ -62,6 +75,9 @@ export class PropertyFormComponent implements OnInit {
     parkingSpaces: [null as number | null],
     furnishing: ['UNFURNISHED'],
     readyToMove: [true],
+    reraNumber: [''],
+    totalTowers: [null as number | null],
+    totalUnits: [null as number | null],
     askingPrice: [null as number | null, [Validators.required, Validators.min(1)]],
     estimatedMinPrice: [null as number | null],
     estimatedMaxPrice: [null as number | null],
@@ -71,11 +87,47 @@ export class PropertyFormComponent implements OnInit {
     return !!this.propertyId;
   }
 
+  get isSociety(): boolean {
+    return this.form.controls.propertyType.value === 'SOCIETY';
+  }
+
   ngOnInit(): void {
+    this.typeWatch = this.form.controls.propertyType.valueChanges.subscribe((type) => {
+      this.syncPriceValidators(type === 'SOCIETY');
+    });
     this.propertyId = this.route.snapshot.paramMap.get('id');
     if (this.propertyId) {
       this.loadProperty(this.propertyId);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.typeWatch?.unsubscribe();
+    this.pendingMedia.forEach((item) => URL.revokeObjectURL(item.previewUrl));
+  }
+
+  toggleBhk(bhk: number): void {
+    this.selectedBhks = this.selectedBhks.includes(bhk)
+      ? this.selectedBhks.filter((value) => value !== bhk)
+      : [...this.selectedBhks, bhk].sort((a, b) => a - b);
+  }
+
+  private syncPriceValidators(society: boolean): void {
+    const asking = this.form.controls.askingPrice;
+    const min = this.form.controls.estimatedMinPrice;
+    const max = this.form.controls.estimatedMaxPrice;
+    if (society) {
+      asking.clearValidators();
+      min.setValidators([Validators.required, Validators.min(1)]);
+      max.setValidators([Validators.required, Validators.min(1)]);
+    } else {
+      asking.setValidators([Validators.required, Validators.min(1)]);
+      min.clearValidators();
+      max.clearValidators();
+    }
+    asking.updateValueAndValidity({ emitEvent: false });
+    min.updateValueAndValidity({ emitEvent: false });
+    max.updateValueAndValidity({ emitEvent: false });
   }
 
   onMediaSelected(event: Event): void {
@@ -149,6 +201,17 @@ export class PropertyFormComponent implements OnInit {
       return;
     }
 
+    const rawCheck = this.form.getRawValue();
+    if (
+      rawCheck.propertyType === 'SOCIETY' &&
+      rawCheck.estimatedMinPrice &&
+      rawCheck.estimatedMaxPrice &&
+      Number(rawCheck.estimatedMaxPrice) < Number(rawCheck.estimatedMinPrice)
+    ) {
+      this.errorMessage = 'Maximum price must be at least the minimum price.';
+      return;
+    }
+
     this.loading = true;
     this.errorMessage = '';
     this.mediaError = '';
@@ -208,10 +271,15 @@ export class PropertyFormComponent implements OnInit {
           parkingSpaces: property.parkingSpaces,
           furnishing: property.furnishing ?? 'UNFURNISHED',
           readyToMove: property.readyToMove ?? true,
+          reraNumber: property.reraNumber ?? '',
+          totalTowers: property.totalTowers ?? null,
+          totalUnits: property.totalUnits ?? null,
           askingPrice: property.askingPrice,
           estimatedMinPrice: property.estimatedMinPrice,
           estimatedMaxPrice: property.estimatedMaxPrice,
         });
+        this.selectedBhks = [...(property.bhkConfigurations ?? [])].sort((a, b) => a - b);
+        this.syncPriceValidators(property.propertyType === 'SOCIETY');
         this.existingMedia = property.media ?? [];
         this.loadingProperty = false;
 
@@ -230,6 +298,9 @@ export class PropertyFormComponent implements OnInit {
 
   private buildPayload() {
     const raw = this.form.getRawValue();
+    const society = raw.propertyType === 'SOCIETY';
+    const minPrice = raw.estimatedMinPrice ?? undefined;
+    const maxPrice = raw.estimatedMaxPrice ?? undefined;
     return {
       title: raw.title.trim(),
       description: raw.description.trim() || undefined,
@@ -239,18 +310,22 @@ export class PropertyFormComponent implements OnInit {
       address: raw.address.trim(),
       state: raw.state.trim(),
       pincode: raw.pincode.trim() || undefined,
-      bhk: raw.bhk ?? undefined,
-      carpetAreaSqft: raw.carpetAreaSqft ?? undefined,
-      builtUpAreaSqft: raw.builtUpAreaSqft ?? undefined,
-      floor: raw.floor ?? undefined,
-      totalFloors: raw.totalFloors ?? undefined,
-      ageYears: raw.ageYears ?? undefined,
-      parkingSpaces: raw.parkingSpaces ?? undefined,
-      furnishing: raw.furnishing as (typeof FURNISHING_STATUSES)[number],
+      bhk: society ? undefined : raw.bhk ?? undefined,
+      carpetAreaSqft: society ? undefined : raw.carpetAreaSqft ?? undefined,
+      builtUpAreaSqft: society ? undefined : raw.builtUpAreaSqft ?? undefined,
+      floor: society ? undefined : raw.floor ?? undefined,
+      totalFloors: society ? undefined : raw.totalFloors ?? undefined,
+      ageYears: society ? undefined : raw.ageYears ?? undefined,
+      parkingSpaces: society ? undefined : raw.parkingSpaces ?? undefined,
+      furnishing: (society ? 'UNFURNISHED' : raw.furnishing) as (typeof FURNISHING_STATUSES)[number],
       readyToMove: raw.readyToMove,
-      askingPrice: Number(raw.askingPrice),
-      estimatedMinPrice: raw.estimatedMinPrice ?? undefined,
-      estimatedMaxPrice: raw.estimatedMaxPrice ?? undefined,
+      askingPrice: society ? Number(minPrice) : Number(raw.askingPrice),
+      estimatedMinPrice: minPrice,
+      estimatedMaxPrice: maxPrice,
+      reraNumber: society ? raw.reraNumber.trim() || undefined : undefined,
+      totalTowers: society ? raw.totalTowers ?? undefined : undefined,
+      totalUnits: society ? raw.totalUnits ?? undefined : undefined,
+      bhkConfigurations: society ? this.selectedBhks : [],
     };
   }
 }

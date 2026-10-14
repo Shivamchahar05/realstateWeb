@@ -1,0 +1,50 @@
+<section class="blog-page">
+  <div class="container">
+    <header class="blog-head">
+      <p class="eyebrow">Guides</p>
+      <h1>PropSure blog</h1>
+      <p>Locality notes, documents, and buying advice for verified NCR homes.</p>
+    </header>
+
+    <div class="category-row">
+      <button type="button" [class.is-on]="!category" (click)="setCategory('')">All</button>
+      @for (item of categories; track item) {
+        <button type="button" [class.is-on]="category === item" (click)="setCategory(item)">
+          {{ item }}
+        </button>
+      }
+    </div>
+
+    @if (loading()) {
+      <p class="muted">Loading posts…</p>
+    } @else if (!posts().length) {
+      <p class="muted">No published posts in this category yet.</p>
+    } @else {
+      <div class="post-grid">
+        @for (post of posts(); track post.id) {
+          <a class="post-card" [routerLink]="['/blog', post.slug]">
+            <div class="post-media">
+              <img [src]="cover(post)" [alt]="post.title" (error)="onCoverError($event)" />
+            </div>
+            <div class="post-copy">
+              <p class="post-cat">{{ post.category }}</p>
+              <h2>{{ post.title }}</h2>
+              <p class="excerpt">{{ post.excerpt }}</p>
+              @if (post.publishedAt) {
+                <p class="post-date">{{ post.publishedAt | date: 'mediumDate' }}</p>
+              }
+            </div>
+          </a>
+        }
+      </div>
+
+      @if (totalPages() > 1) {
+        <nav class="pager" aria-label="Blog pages">
+          <button type="button" [disabled]="page === 1" (click)="goToPage(page - 1)">Previous</button>
+          <span>Page {{ page }} of {{ totalPages() }}</span>
+          <button type="button" [disabled]="page === totalPages()" (click)="goToPage(page + 1)">Next</button>
+        </nav>
+      }
+    }
+  </div>
+</section>

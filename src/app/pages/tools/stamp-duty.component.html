@@ -1,0 +1,71 @@
+<section class="tool-page">
+  <div class="tool-wrap">
+    <button type="button" class="back" (click)="goBack()">← Back</button>
+    <p class="eyebrow">Buyer tools</p>
+    <h1>Stamp duty</h1>
+    <p class="lead">
+      See the government cost before you shortlist. Rates are the 2026 urban figures for Gurgaon, Faridabad, Delhi and Noida.
+    </p>
+
+    <div class="duty-layout">
+      <form class="panel" (submit)="$event.preventDefault()">
+        <p class="field-label">City</p>
+        <div class="pills">
+          @for (name of cities; track name) {
+            <button type="button" [class.is-on]="city() === name" (click)="city.set(name)">{{ name }}</button>
+          }
+        </div>
+
+        <p class="field-label">Buyer</p>
+        <div class="pills">
+          @for (option of buyers; track option.id) {
+            <button type="button" [class.is-on]="buyer() === option.id" (click)="buyer.set(option.id)">
+              {{ option.label }}
+            </button>
+          }
+        </div>
+
+        <label class="price-field">
+          <span class="field-label">Agreement price</span>
+          <input
+            type="number"
+            min="0"
+            step="100000"
+            [value]="price() || ''"
+            (input)="setPrice($any($event.target).value)"
+          />
+          @if (price() > 0) {
+            <em class="price-readout">{{ price() | inr }}</em>
+          }
+        </label>
+        <div class="pills presets">
+          @for (preset of presets; track preset.value) {
+            <button type="button" [class.is-on]="price() === preset.value" (click)="price.set(preset.value)">
+              {{ preset.label }}
+            </button>
+          }
+        </div>
+        <p class="note">
+          The sub-registrar charges duty on the higher of this price and the circle rate. This is an estimate, not the final challan.
+        </p>
+      </form>
+
+      <aside class="result">
+        <p class="result-kicker">{{ city() }} · {{ result().state }}</p>
+        <p class="result-total">{{ result().total | inr }}</p>
+        <p class="result-caption">Estimated government charges</p>
+        <ul>
+          @for (line of result().lines; track line.label) {
+            <li>
+              <span>{{ line.label }}</span>
+              <strong>{{ line.amount | inr }}</strong>
+            </li>
+          }
+        </ul>
+        @if (result().savings > 0) {
+          <p class="save">{{ result().savings | inr }} less than a male buyer on the same price.</p>
+        }
+      </aside>
+    </div>
+  </div>
+</section>

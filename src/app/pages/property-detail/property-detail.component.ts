@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CatalogService } from '../../core/api/catalog.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -19,6 +20,8 @@ import {
   propertyCoverImage,
 } from '../../shared/property-media';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
+import { BuyerLibraryService } from '../../core/services/buyer-library.service';
+import { BlogCard, BlogService } from '../../core/services/blog.service';
 
 @Component({
   selector: 'app-property-detail',
@@ -32,6 +35,12 @@ export class PropertyDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
   private readonly requestsApi = inject(PropertyRequestService);
+  private readonly sanitizer = inject(DomSanitizer);
+  readonly library = inject(BuyerLibraryService);
+  private readonly blog = inject(BlogService);
+  relatedGuide: BlogCard | null = null;
+  similar: Property[] = [];
+  similarReady = false;
 
   readonly typeLabels = PROPERTY_TYPE_LABELS;
   readonly amenityFilters = AMENITY_CATEGORIES;
@@ -51,6 +60,13 @@ export class PropertyDetailComponent implements OnInit {
   requestError = '';
   requestSuccess = false;
 
+  emiOpen = false;
+  downPayment = 0;
+  interestRate = 8.5;
+  tenureYears = 20;
+  actionNote = '';
+  mapUrl: SafeResourceUrl | null = null;
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
@@ -64,12 +80,81 @@ export class PropertyDetailComponent implements OnInit {
         this.property = res.data;
         this.activePhotoIndex = 0;
         this.showVideo = false;
+        this.downPayment = Math.round(this.price() * 0.2);
+        this.mapUrl = this.buildMapUrl(res.data);
+        this.library.remember(res.data);
         this.loading = false;
         this.loadExistingRequest(id);
+        this.loadRelatedGuide(res.data.city, res.data.locality);
+        this.loadSimilar(res.data);
       },
       error: () => {
         this.error = 'This property is unavailable or no longer listed.';
         this.loading = false;
+      },
+    });
+  }
+
+  coverFor(property: Property): string {
+    return propertyCoverImage(property);
+  }
+
+  homePrice(property: Property): number {
+    if (
+      property.propertyType === 'SOCIETY' &&
+      property.estimatedMinPrice &&
+      property.estimatedMaxPrice
+    ) {
+      return Math.round((Number(property.estimatedMinPrice) + Number(property.estimatedMaxPrice)) / 2);
+    }
+    return Number(property.askingPrice ?? 0);
+  }
+
+  private loadSimilar(property: Property): void {
+    const price = this.homePrice(property);
+    const band = price > 0 ? { minPrice: Math.round(price * 0.7), maxPrice: Math.round(price * 1.3) } : {};
+    this.catalog.list({ city: property.city, limit: 12, page: 1, ...band }).subscribe({
+      next: (res) => {
+        const picked = this.pickSimilar(res.data ?? [], property);
+        if (picked.length || price <= 0) {
+          this.similar = picked;
+          this.similarReady = true;
+          return;
+        }
+        this.catalog.list({ city: property.city, limit: 12, page: 1 }).subscribe({
+          next: (wide) => {
+            this.similar = this.pickSimilar(wide.data ?? [], property);
+            this.similarReady = true;
+          },
+          error: () => {
+            this.similarReady = true;
+          },
+        });
+      },
+      error: () => {
+        this.similarReady = true;
+      },
+    });
+  }
+
+  private pickSimilar(items: Property[], current: Property): Property[] {
+    return items
+      .filter((item) => item.id !== current.id)
+      .sort((a, b) => {
+        const local = Number(a.locality !== current.locality) - Number(b.locality !== current.locality);
+        if (local !== 0) return local;
+        return Number(a.propertyType !== current.propertyType) - Number(b.propertyType !== current.propertyType);
+      })
+      .slice(0, 4);
+  }
+
+  private loadRelatedGuide(city: string, locality: string): void {
+    this.blog.related(city, locality).subscribe({
+      next: (post) => {
+        this.relatedGuide = post;
+      },
+      error: () => {
+        this.relatedGuide = null;
       },
     });
   }
@@ -142,6 +227,18 @@ export class PropertyDetailComponent implements OnInit {
 
   price(): number {
     return Number(this.property?.askingPrice ?? 0);
+  }
+
+  dutyBase(): number {
+    const property = this.property;
+    if (
+      property?.propertyType === 'SOCIETY' &&
+      property.estimatedMinPrice &&
+      property.estimatedMaxPrice
+    ) {
+      return Math.round((Number(property.estimatedMinPrice) + Number(property.estimatedMaxPrice)) / 2);
+    }
+    return this.price();
   }
 
   isVerified(): boolean {
@@ -246,5 +343,59 @@ export class PropertyDetailComponent implements OnInit {
 
   nearbyLabel(category: string): string {
     return nearbyCategoryLabel(category);
+  }
+
+  toggleSave(): void {
+    if (!this.property) return;
+    const result = this.library.toggleSave(this.property);
+    if (result === 'login') {
+      void this.router.navigate(['/login'], {
+        queryParams: { returnUrl: `/properties/${this.property.id}` },
+      });
+      return;
+    }
+    this.actionNote = result === 'saved' ? 'Saved to your homes.' : 'Removed from saved homes.';
+  }
+
+  toggleCompare(): void {
+    if (!this.property) return;
+    const result = this.library.toggleCompare(this.property.id);
+    if (result === 'full') {
+      this.actionNote = 'You can compare up to 3 homes. Remove one to add this.';
+      return;
+    }
+    this.actionNote = result === 'added' ? 'Added to compare.' : 'Removed from compare.';
+  }
+
+  emiPrincipal(): number {
+    return Math.max(this.price() - Math.max(this.downPayment || 0, 0), 0);
+  }
+
+  monthlyEmi(): number {
+    const principal = this.emiPrincipal();
+    const months = Math.round((this.tenureYears || 0) * 12);
+    if (principal <= 0 || months <= 0) return 0;
+    const annual = this.interestRate || 0;
+    if (annual <= 0) return principal / months;
+    const monthlyRate = annual / 12 / 100;
+    const growth = Math.pow(1 + monthlyRate, months);
+    return (principal * monthlyRate * growth) / (growth - 1);
+  }
+
+  totalInterest(): number {
+    const months = Math.round((this.tenureYears || 0) * 12);
+    return Math.max(this.monthlyEmi() * months - this.emiPrincipal(), 0);
+  }
+
+  private buildMapUrl(property: Property): SafeResourceUrl {
+    const lat = Number(property.latitude);
+    const lng = Number(property.longitude);
+    const query =
+      Number.isFinite(lat) && Number.isFinite(lng) && lat !== 0
+        ? `${lat},${lng}`
+        : `${property.locality}, ${property.city}, India`;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://maps.google.com/maps?q=${encodeURIComponent(query)}&z=15&output=embed`,
+    );
   }
 }

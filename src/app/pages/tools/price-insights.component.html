@@ -1,0 +1,83 @@
+<section class="tool-page">
+  <div class="tool-wrap">
+    <button type="button" class="back" (click)="goBack()">← Back</button>
+    <p class="eyebrow">Buyer tools</p>
+    <h1>Price insights</h1>
+    <p class="lead">
+      Typical asking prices from verified, live homes. Society listings use the middle of their price range.
+    </p>
+
+    @if (loading()) {
+      <p class="note">Loading verified prices…</p>
+    } @else if (failed()) {
+      <p class="note">Prices could not be loaded. Refresh and try again.</p>
+    } @else {
+      <div class="city-grid">
+        @for (city of cities(); track city.city) {
+          <button type="button" class="city-card" [class.is-on]="selected() === city.city" (click)="selected.set(city.city)">
+            <span>{{ city.city }}</span>
+            <strong>{{ city.median | inr }}</strong>
+            <em>{{ city.count }} verified</em>
+          </button>
+        }
+      </div>
+
+      <section class="panel compare">
+        <p class="field-label">Median asking price</p>
+        <div class="bars">
+          @for (city of cities(); track city.city) {
+            <button type="button" class="bar-row" [class.is-on]="selected() === city.city" (click)="selected.set(city.city)">
+              <span>{{ city.city }}</span>
+              <span class="track"><span class="fill" [style.width]="barWidth(city.median)"></span></span>
+              <strong>{{ city.median | inr }}</strong>
+            </button>
+          }
+        </div>
+      </section>
+
+      @if (active(); as city) {
+        <section class="panel detail">
+          <div class="detail-head">
+            <div>
+              <p class="field-label">{{ city.city }}</p>
+              <h2>{{ city.count ? 'What verified homes are listed at' : 'No verified homes yet' }}</h2>
+            </div>
+            <a class="browse" [routerLink]="['/browse']" [queryParams]="{ city: city.city }">See listings</a>
+          </div>
+
+          @if (city.count) {
+            <div class="stats">
+              <article>
+                <span>Lowest</span>
+                <strong>{{ city.min | inr }}</strong>
+              </article>
+              <article class="is-main">
+                <span>Typical</span>
+                <strong>{{ city.median | inr }}</strong>
+              </article>
+              <article>
+                <span>Highest</span>
+                <strong>{{ city.max | inr }}</strong>
+              </article>
+            </div>
+
+            @if (city.localities.length) {
+              <p class="field-label">Localities on PropSure</p>
+              <div class="localities">
+                @for (locality of city.localities; track locality.name) {
+                  <a [routerLink]="['/localities', city.city, locality.name]">
+                    <span>{{ locality.name }}</span>
+                    <strong>{{ locality.median | inr }}</strong>
+                    <em>{{ locality.count }} home{{ locality.count === 1 ? '' : 's' }}</em>
+                  </a>
+                }
+              </div>
+            }
+          } @else {
+            <p class="empty">When a verified home goes live in {{ city.city }}, its price will show up here.</p>
+          }
+        </section>
+      }
+    }
+  </div>
+</section>

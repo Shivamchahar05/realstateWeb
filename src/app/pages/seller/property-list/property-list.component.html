@@ -28,40 +28,38 @@
         <a routerLink="/seller/properties/new" class="btn btn--primary">Add property</a>
       </div>
     } @else {
-      <div class="table-wrap">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Code</th>
-              <th>Title</th>
-              <th>Location</th>
-              <th>Asking price</th>
-              <th>Verification</th>
-              <th>Listing</th>
-              <th>Updated</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (property of properties; track property.id) {
-              <tr>
-                <td class="mono">{{ property.propertyCode }}</td>
-                <td>{{ property.title }}</td>
-                <td>{{ property.locality }}, {{ property.city }}</td>
-                <td>{{ property.askingPrice | inr }}</td>
-                <td><span class="status-pill">{{ formatStatus(property.verificationStatus) }}</span></td>
-                <td><span class="status-pill status-pill--muted">{{ formatStatus(property.listingStatus) }}</span></td>
-                <td>{{ property.updatedAt | date: 'mediumDate' }}</td>
-                <td class="actions">
-                  <a [routerLink]="['/seller/properties', property.id]">Open</a>
-                  @if (canEdit(property)) {
-                    <a [routerLink]="['/seller/properties', property.id, 'edit']">Edit</a>
-                  }
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+      <div class="listing-list">
+        @for (property of properties; track property.id) {
+          <article class="listing-card">
+            <div class="listing-main">
+              <p class="code">{{ property.propertyCode }}</p>
+              <h2>{{ property.title }}</h2>
+              <p class="where">{{ property.locality }}, {{ property.city }}</p>
+              <p class="price">
+                @if (property.propertyType === 'SOCIETY' && property.estimatedMinPrice && property.estimatedMaxPrice) {
+                  {{ property.estimatedMinPrice | inr }} – {{ property.estimatedMaxPrice | inr }}
+                } @else {
+                  {{ property.askingPrice | inr }}
+                }
+              </p>
+            </div>
+            <div class="listing-status">
+              <span class="status-pill" [attr.data-tone]="tone(property.verificationStatus)">
+                {{ statusLabel(property.verificationStatus) }}
+              </span>
+              <span class="status-pill" [attr.data-tone]="tone(property.listingStatus)">
+                {{ statusLabel(property.listingStatus) }}
+              </span>
+              <p class="updated">Updated {{ property.updatedAt | date: 'mediumDate' }}</p>
+            </div>
+            <div class="listing-actions">
+              <a class="btn btn--primary" [routerLink]="['/seller/properties', property.id]">Open</a>
+              @if (canEdit(property)) {
+                <a class="btn btn--ghost" [routerLink]="['/seller/properties', property.id, 'edit']">Edit</a>
+              }
+            </div>
+          </article>
+        }
       </div>
 
       <div class="pagination">

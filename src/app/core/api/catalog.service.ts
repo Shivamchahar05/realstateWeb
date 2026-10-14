@@ -1,9 +1,24 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
 import { Property, PropertyFilters } from '../models/property.model';
+
+export interface LocalityInsight {
+  name: string;
+  count: number;
+  median: number | null;
+}
+
+export interface CityInsight {
+  city: string;
+  count: number;
+  min: number | null;
+  max: number | null;
+  median: number | null;
+  localities: LocalityInsight[];
+}
 
 @Injectable({ providedIn: 'root' })
 export class CatalogService {
@@ -27,5 +42,11 @@ export class CatalogService {
 
   getById(id: string): Observable<ApiResponse<Property>> {
     return this.http.get<ApiResponse<Property>>(`${this.baseUrl}/${id}`);
+  }
+
+  priceInsights(): Observable<{ cities: CityInsight[] }> {
+    return this.http
+      .get<ApiResponse<{ cities: CityInsight[] }>>(`${environment.apiUrl}/catalog/price-insights`)
+      .pipe(map((res) => res.data));
   }
 }

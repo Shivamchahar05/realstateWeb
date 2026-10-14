@@ -4,6 +4,7 @@ export type PropertyType =
   | 'INDEPENDENT_HOUSE'
   | 'PLOT'
   | 'COMMERCIAL'
+  | 'SOCIETY'
   | 'OTHER';
 
 export type VerificationStatus = string;
@@ -22,6 +23,12 @@ export interface PropertyMedia {
 export interface PropertySeller {
   id: string;
   fullName: string;
+}
+
+export interface SellerContact {
+  maskedPhone: string;
+  telUrl: string;
+  whatsappUrl: string;
 }
 
 export interface PropertyHealthReport {
@@ -49,6 +56,8 @@ export interface Property {
   address: string;
   state?: string;
   pincode?: string | null;
+  latitude?: number | string | null;
+  longitude?: number | string | null;
   bhk?: number | null;
   carpetAreaSqft?: number | null;
   builtUpAreaSqft?: number | null;
@@ -61,6 +70,10 @@ export interface Property {
   furnishingsInventory?: Array<{ key: string; qty: number }> | null;
   amenities?: string[] | null;
   nearbyPlaces?: Array<{ name: string; distance: string; category: string }> | null;
+  reraNumber?: string | null;
+  totalTowers?: number | null;
+  totalUnits?: number | null;
+  bhkConfigurations?: number[] | null;
   askingPrice: number | string;
   estimatedMinPrice?: number | string | null;
   estimatedMaxPrice?: number | string | null;
@@ -69,6 +82,7 @@ export interface Property {
   verificationStatus?: VerificationStatus;
   lastVerifiedAt?: string | null;
   seller?: PropertySeller | null;
+  sellerContact?: SellerContact | null;
   media?: PropertyMedia[];
   healthReport?: PropertyHealthReport | null;
   documents?: PropertyDocument[];
@@ -93,5 +107,6 @@ export const PROPERTY_TYPE_LABELS: Record<PropertyType, string> = {
   INDEPENDENT_HOUSE: 'Independent House',
   PLOT: 'Plot',
   COMMERCIAL: 'Commercial',
+  SOCIETY: 'Society',
   OTHER: 'Other',
 };

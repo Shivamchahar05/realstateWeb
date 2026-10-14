@@ -1,0 +1,62 @@
+<section class="locality-page">
+  <div class="container">
+    <p class="eyebrow">Locality</p>
+    <h1>{{ locality }}, {{ city }}</h1>
+    <p class="lead">Verified homes and nearby places buyers check before a visit.</p>
+
+    @if (mapUrl) {
+      <iframe class="locality-map" [src]="mapUrl" title="Map of {{ locality }}, {{ city }}" loading="lazy"></iframe>
+    }
+
+    @if (loading) {
+      <p>Loading listings…</p>
+    } @else if (error) {
+      <p>{{ error }}</p>
+    } @else {
+      <section>
+        <h2>Verified listings</h2>
+        @if (!properties.length) {
+          <p>No live listings in this locality yet.</p>
+        } @else {
+          <div class="locality-grid">
+            @for (property of properties; track property.id) {
+              <a class="locality-card" [routerLink]="['/properties', property.id]">
+                <img [src]="cover(property)" [alt]="property.title" />
+                <div>
+                  <strong>
+                    @if (property.propertyType === 'SOCIETY' && property.estimatedMinPrice && property.estimatedMaxPrice) {
+                      {{ property.estimatedMinPrice | inr }} – {{ property.estimatedMaxPrice | inr }}
+                    } @else {
+                      {{ priceLabel(property) | inr }}
+                    }
+                  </strong>
+                  <span>{{ property.title }}</span>
+                </div>
+              </a>
+            }
+          </div>
+        }
+      </section>
+
+      <section>
+        <h2>Around this locality</h2>
+        @if (!nearby.length) {
+          <p>Nearby schools, metro and hospitals appear here once listings include them.</p>
+        } @else {
+          <div class="nearby-groups">
+            @for (group of nearby; track group.category) {
+              <article>
+                <h3>{{ group.label }}</h3>
+                <ul>
+                  @for (place of group.places; track place.name) {
+                    <li>{{ place.name }} <em>{{ place.distance }}</em></li>
+                  }
+                </ul>
+              </article>
+            }
+          </div>
+        }
+      </section>
+    }
+  </div>
+</section>

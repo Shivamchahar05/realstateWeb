@@ -12,6 +12,8 @@ export const PROPERTY_TYPE_FALLBACK_IMAGES: Record<PropertyType, string> = {
     'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=900&q=80',
   COMMERCIAL:
     'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=80',
+  SOCIETY:
+    'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=900&q=80',
   OTHER:
     'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80',
 };

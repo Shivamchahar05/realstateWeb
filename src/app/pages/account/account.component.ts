@@ -3,15 +3,18 @@ import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { User } from '../../core/models/user.model';
+import { BuyerLibraryService } from '../../core/services/buyer-library.service';
+import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 
 @Component({
   selector: 'app-account',
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, InrCurrencyPipe],
   templateUrl: './account.component.html',
   styleUrl: './account.component.scss',
 })
 export class AccountComponent implements OnInit {
   private readonly auth = inject(AuthService);
+  readonly library = inject(BuyerLibraryService);
 
   loading = true;
   profile: User | null = null;

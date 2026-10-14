@@ -20,7 +20,7 @@
           <legend>Basics</legend>
           <div class="form-grid">
             <label class="field field--wide">
-              <span>Title</span>
+              <span>{{ isSociety ? 'Society name' : 'Title' }}</span>
               <input type="text" formControlName="title" />
             </label>
             <label class="field field--wide">
@@ -31,10 +31,11 @@
               <span>Property type</span>
               <select formControlName="propertyType">
                 @for (type of propertyTypes; track type) {
-                  <option [value]="type">{{ type.replaceAll('_', ' ') }}</option>
+                  <option [value]="type">{{ typeLabels[type] }}</option>
                 }
               </select>
             </label>
+            @if (!isSociety) {
             <label class="field">
               <span>Furnishing</span>
               <select formControlName="furnishing">
@@ -43,6 +44,7 @@
                 }
               </select>
             </label>
+            }
           </div>
         </fieldset>
 
@@ -57,6 +59,44 @@
           </div>
         </fieldset>
 
+        @if (isSociety) {
+          <fieldset>
+            <legend>Society</legend>
+            <div class="form-grid">
+              <label class="field">
+                <span>RERA number</span>
+                <input type="text" formControlName="reraNumber" />
+              </label>
+              <label class="field">
+                <span>Total towers</span>
+                <input type="number" formControlName="totalTowers" min="1" />
+              </label>
+              <label class="field">
+                <span>Total units</span>
+                <input type="number" formControlName="totalUnits" min="1" />
+              </label>
+              <div class="field field--wide">
+                <span>Configurations</span>
+                <div class="config-picks">
+                  @for (bhk of bhkOptions; track bhk) {
+                    <label class="config-pick">
+                      <input
+                        type="checkbox"
+                        [checked]="selectedBhks.includes(bhk)"
+                        (change)="toggleBhk(bhk)"
+                      />
+                      <span>{{ bhk }} BHK</span>
+                    </label>
+                  }
+                </div>
+              </div>
+              <label class="field field--checkbox">
+                <input type="checkbox" formControlName="readyToMove" />
+                <span>Ready to move</span>
+              </label>
+            </div>
+          </fieldset>
+        } @else {
         <fieldset>
           <legend>Specifications</legend>
           <div class="form-grid">
@@ -73,13 +113,19 @@
             </label>
           </div>
         </fieldset>
+        }
 
         <fieldset>
           <legend>Pricing</legend>
           <div class="form-grid">
-            <label class="field"><span>Asking price (INR)</span><input type="number" formControlName="askingPrice" min="1" /></label>
-            <label class="field"><span>Estimated min</span><input type="number" formControlName="estimatedMinPrice" min="1" /></label>
-            <label class="field"><span>Estimated max</span><input type="number" formControlName="estimatedMaxPrice" min="1" /></label>
+            @if (isSociety) {
+              <label class="field"><span>Price from (INR)</span><input type="number" formControlName="estimatedMinPrice" min="1" /></label>
+              <label class="field"><span>Price to (INR)</span><input type="number" formControlName="estimatedMaxPrice" min="1" /></label>
+            } @else {
+              <label class="field"><span>Asking price (INR)</span><input type="number" formControlName="askingPrice" min="1" /></label>
+              <label class="field"><span>Estimated min</span><input type="number" formControlName="estimatedMinPrice" min="1" /></label>
+              <label class="field"><span>Estimated max</span><input type="number" formControlName="estimatedMaxPrice" min="1" /></label>
+            }
           </div>
         </fieldset>
 

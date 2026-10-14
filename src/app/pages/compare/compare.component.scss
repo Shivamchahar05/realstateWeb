@@ -1,0 +1,106 @@
+.compare-page {
+  background: #f3f1ec;
+  color: #132536;
+  min-height: calc(100vh - 4rem);
+  padding: 2.5rem 0 4rem;
+}
+
+.compare-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.3rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: #4a5d6c;
+}
+
+.compare-head h1 {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display);
+}
+
+.compare-head p {
+  margin: 0;
+  color: #4a5d6c;
+}
+
+.text-link {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: #2f5d56;
+  font-weight: 650;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.empty {
+  background: #fff;
+  padding: 2rem;
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+}
+
+.compare-table {
+  display: grid;
+  gap: 0;
+  background: #fff;
+  border: 1px solid rgba(19, 37, 54, 0.08);
+  overflow-x: auto;
+}
+
+.compare-row {
+  display: grid;
+  grid-template-columns: 9.5rem repeat(var(--cols), minmax(12rem, 1fr));
+  border-top: 1px solid rgba(19, 37, 54, 0.08);
+}
+
+.compare-head-row {
+  border-top: 0;
+  background: #132536;
+  color: #f3f1ec;
+}
+
+.compare-row > div {
+  padding: 0.9rem 1rem;
+  line-height: 1.45;
+}
+
+.row-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #4a5d6c;
+}
+
+.compare-home {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.compare-home a {
+  color: inherit;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.compare-home .text-link {
+  color: #d7ebe4;
+  justify-self: start;
+}
+
+@media (max-width: 720px) {
+  .compare-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

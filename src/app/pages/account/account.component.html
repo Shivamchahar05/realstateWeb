@@ -55,6 +55,32 @@
           <button type="button" class="btn btn-logout" (click)="logout()">Logout</button>
         </div>
       </article>
+
+      <section class="library-panel">
+        <h2>Saved homes</h2>
+        <p>
+          {{ library.savedIds().length }} saved.
+          <a routerLink="/saved">Open saved homes</a>
+        </p>
+      </section>
+
+      <section class="library-panel">
+        <h2>Recently viewed</h2>
+        @if (!library.recent().length) {
+          <p>Homes you open show up here, even before you sign in.</p>
+        } @else {
+          <ul>
+            @for (home of library.recent(); track home.id) {
+              <li>
+                <a [routerLink]="['/properties', home.id]">
+                  <strong>{{ home.title }}</strong>
+                  <span>{{ home.locality }}, {{ home.city }} · {{ home.askingPrice | inr }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        }
+      </section>
     }
   </div>
 </section>

@@ -4,6 +4,7 @@ export const PROPERTY_TYPES = [
   'INDEPENDENT_HOUSE',
   'PLOT',
   'COMMERCIAL',
+  'SOCIETY',
   'OTHER',
 ] as const;
 
@@ -126,6 +127,10 @@ export interface Property {
   furnishingsInventory?: Array<{ key: string; qty: number }> | null;
   amenities?: string[] | null;
   nearbyPlaces?: Array<{ name: string; distance: string; category: string }> | null;
+  reraNumber?: string | null;
+  totalTowers?: number | null;
+  totalUnits?: number | null;
+  bhkConfigurations?: number[] | null;
   askingPrice: number;
   estimatedMinPrice: number | null;
   estimatedMaxPrice: number | null;
@@ -162,6 +167,10 @@ export interface CreatePropertyRequest {
   askingPrice: number;
   estimatedMinPrice?: number;
   estimatedMaxPrice?: number;
+  reraNumber?: string;
+  totalTowers?: number;
+  totalUnits?: number;
+  bhkConfigurations?: number[];
 }
 
 export type UpdatePropertyRequest = Partial<CreatePropertyRequest>;

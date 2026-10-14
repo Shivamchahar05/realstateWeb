@@ -28,7 +28,13 @@
         <p class="property-code">{{ property.propertyCode }}</p>
         <h1>{{ property.title }}</h1>
         <p class="hero-location">{{ property.locality }}, {{ property.city }}</p>
-        <p class="hero-price">{{ price() | inr }}</p>
+        <p class="hero-price">
+          @if (property.propertyType === 'SOCIETY' && property.estimatedMinPrice && property.estimatedMaxPrice) {
+            {{ property.estimatedMinPrice | inr }} – {{ property.estimatedMaxPrice | inr }}
+          } @else {
+            {{ price() | inr }}
+          }
+        </p>
         @if (property.trustScore != null) {
           <p class="hero-trust">Trust score {{ property.trustScore }}/100</p>
         }
@@ -72,7 +78,7 @@
       <div class="container body-grid">
         <div class="main-col">
           <section class="block slide-up">
-            <h2>About this home</h2>
+            <h2>{{ property.propertyType === 'SOCIETY' ? 'About this society' : 'About this home' }}</h2>
             <p class="lede">
               {{
                 property.description ||
@@ -82,13 +88,39 @@
           </section>
 
           <section class="block slide-up delay-1">
-            <h2>Property highlights</h2>
+            <h2>{{ property.propertyType === 'SOCIETY' ? 'Society details' : 'Property highlights' }}</h2>
             <dl class="highlights">
               <div>
                 <dt>Type</dt>
                 <dd>{{ typeLabels[property.propertyType] }}</dd>
               </div>
-              @if (property.bhk) {
+              @if (property.propertyType === 'SOCIETY') {
+                @if (property.reraNumber) {
+                  <div>
+                    <dt>RERA</dt>
+                    <dd>{{ property.reraNumber }}</dd>
+                  </div>
+                }
+                @if (property.totalTowers) {
+                  <div>
+                    <dt>Towers</dt>
+                    <dd>{{ property.totalTowers }}</dd>
+                  </div>
+                }
+                @if (property.totalUnits) {
+                  <div>
+                    <dt>Units</dt>
+                    <dd>{{ property.totalUnits }}</dd>
+                  </div>
+                }
+                @if (property.bhkConfigurations?.length) {
+                  <div>
+                    <dt>Configurations</dt>
+                    <dd>{{ property.bhkConfigurations!.join(', ') }} BHK</dd>
+                  </div>
+                }
+              }
+              @if (property.propertyType !== 'SOCIETY' && property.bhk) {
                 <div>
                   <dt>Configuration</dt>
                   <dd>{{ property.bhk }} BHK</dd>
@@ -112,13 +144,13 @@
                   <dd>{{ property.floor }} of {{ property.totalFloors }}</dd>
                 </div>
               }
-              @if (property.furnishing) {
+              @if (property.propertyType !== 'SOCIETY' && property.furnishing) {
                 <div>
                   <dt>Furnishing</dt>
                   <dd>{{ furnishingStatusLabel(property.furnishing) }}</dd>
                 </div>
               }
-              @if (property.parkingSpaces != null) {
+              @if (property.propertyType !== 'SOCIETY' && property.parkingSpaces != null) {
                 <div>
                   <dt>Parking</dt>
                   <dd>{{ property.parkingSpaces }}</dd>
@@ -197,7 +229,9 @@
             <h2>Locality &amp; commute</h2>
             <p class="address-line">{{ property.address }}</p>
             <p class="muted-line">
-              {{ property.locality }}, {{ property.city }}
+              <a [routerLink]="['/localities', property.city, property.locality]">
+                {{ property.locality }}, {{ property.city }}
+              </a>
               @if (property.state) {
                 , {{ property.state }}
               }
@@ -205,6 +239,9 @@
                 · {{ property.pincode }}
               }
             </p>
+            @if (mapUrl) {
+              <iframe class="property-map" [src]="mapUrl" title="Property location" loading="lazy"></iframe>
+            }
             @if (nearbyPlaces().length) {
               <ul class="nearby-list">
                 @for (place of nearbyPlaces(); track place.name + place.distance) {
@@ -217,22 +254,142 @@
               </ul>
             }
           </section>
+
+          @if (relatedGuide) {
+            <section class="block area-guide">
+              <h2>Guide for this area</h2>
+              <a [routerLink]="['/blog', relatedGuide.slug]">
+                <strong>{{ relatedGuide.title }}</strong>
+                <span>{{ relatedGuide.excerpt }}</span>
+              </a>
+            </section>
+          }
         </div>
 
         <aside class="side-col slide-up delay-1">
           <div class="enquiry-panel">
-            <p class="panel-label">Asking price</p>
-            <p class="panel-price">{{ price() | inr }}</p>
-            @if (property.estimatedMinPrice && property.estimatedMaxPrice) {
+            <p class="panel-label">{{ property.propertyType === 'SOCIETY' ? 'Price range' : 'Asking price' }}</p>
+            <p class="panel-price">
+              @if (property.propertyType === 'SOCIETY' && property.estimatedMinPrice && property.estimatedMaxPrice) {
+                {{ property.estimatedMinPrice | inr }} – {{ property.estimatedMaxPrice | inr }}
+              } @else {
+                {{ price() | inr }}
+              }
+            </p>
+            @if (property.propertyType !== 'SOCIETY' && property.estimatedMinPrice && property.estimatedMaxPrice) {
               <p class="panel-estimate">
                 Est. {{ property.estimatedMinPrice | inr }} – {{ property.estimatedMaxPrice | inr }}
               </p>
+            }
+            @if (dutyBase() > 0) {
+              <div class="buyer-tools">
+                <a
+                  class="buyer-tool"
+                  [routerLink]="['/stamp-duty']"
+                  [queryParams]="{ city: property.city, price: dutyBase() }"
+                >
+                  <span class="buyer-tool-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M7 3.5h7.2L19 8.2V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z" /><path d="M14 3.8V8.5h4.6M9 13h6M9 16.5h4" /></svg>
+                  </span>
+                  <span class="buyer-tool-copy">
+                    <strong>Stamp duty</strong>
+                    <em>Government cost on this price</em>
+                  </span>
+                  <span class="buyer-tool-go" aria-hidden="true">→</span>
+                </a>
+                <a
+                  class="buyer-tool"
+                  [routerLink]="['/affordability']"
+                  [queryParams]="{ city: property.city, price: dutyBase() }"
+                >
+                  <span class="buyer-tool-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" /><path d="M12 7.5v5l3 2" /></svg>
+                  </span>
+                  <span class="buyer-tool-copy">
+                    <strong>Affordability</strong>
+                    <em>See if your income covers it</em>
+                  </span>
+                  <span class="buyer-tool-go" aria-hidden="true">→</span>
+                </a>
+              </div>
             }
             @if (isVerified()) {
               <p class="panel-note">Legal review and physical inspection completed.</p>
             }
             @if (property.seller) {
               <p class="panel-seller">Listed by {{ property.seller.fullName }}</p>
+            }
+
+            <div class="quick-actions">
+              <button
+                type="button"
+                class="btn action-btn"
+                [class.is-on]="emiOpen"
+                (click)="emiOpen = !emiOpen"
+              >
+                {{ emiOpen ? 'Hide EMI' : 'Check EMI' }}
+              </button>
+              <button
+                type="button"
+                class="btn action-btn heart-btn"
+                [class.is-on]="library.isSaved(property.id)"
+                [attr.aria-label]="library.isSaved(property.id) ? 'Remove from saved' : 'Save home'"
+                (click)="toggleSave()"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M12 20.5s-7-4.4-9.2-8.4C1 9.2 1.5 5.8 4.1 4.3 6.4 3 9 3.7 12 6.8c3-3.1 5.6-3.8 7.9-2.5 2.6 1.5 3.1 4.9 1.3 7.8C19 16.1 12 20.5 12 20.5z"
+                  />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="btn action-btn"
+                [class.is-on]="library.isCompared(property.id)"
+                (click)="toggleCompare()"
+              >
+                {{ library.isCompared(property.id) ? 'In compare' : 'Compare' }}
+              </button>
+            </div>
+            @if (actionNote) {
+              <p class="panel-hint">{{ actionNote }}</p>
+            }
+
+            @if (emiOpen) {
+              <form class="emi-box" (ngSubmit)="$event.preventDefault()">
+                <label>
+                  <span>Down payment</span>
+                  <input type="number" name="downPayment" min="0" [(ngModel)]="downPayment" />
+                </label>
+                <label>
+                  <span>Interest % / year</span>
+                  <input type="number" name="interestRate" min="0" step="0.1" [(ngModel)]="interestRate" />
+                </label>
+                <label>
+                  <span>Tenure (years)</span>
+                  <input type="number" name="tenureYears" min="1" max="30" [(ngModel)]="tenureYears" />
+                </label>
+                <p class="emi-result">
+                  <span>Monthly EMI</span>
+                  <strong>{{ monthlyEmi() | inr }}</strong>
+                </p>
+                <p class="emi-result">
+                  <span>Loan amount</span>
+                  <strong>{{ emiPrincipal() | inr }}</strong>
+                </p>
+                <p class="emi-result">
+                  <span>Total interest</span>
+                  <strong>{{ totalInterest() | inr }}</strong>
+                </p>
+              </form>
+            }
+
+            @if (property.sellerContact?.whatsappUrl) {
+              <div class="contact-actions">
+                <a class="btn btn-primary" [href]="property.sellerContact!.whatsappUrl" target="_blank" rel="noopener">
+                  Chat on WhatsApp
+                </a>
+              </div>
             }
 
             @if (alreadyRequested() || requestSuccess) {
@@ -300,6 +457,31 @@
           </div>
         </aside>
       </div>
+
+      @if (similarReady) {
+        <section class="container similar">
+          <div class="similar-head">
+            <h2>Similar homes</h2>
+            <a [routerLink]="['/browse']" [queryParams]="{ city: property.city }">See more in {{ property.city }}</a>
+          </div>
+          @if (similar.length) {
+            <div class="similar-rail">
+              @for (home of similar; track home.id) {
+                <a class="similar-card" [routerLink]="['/properties', home.id]">
+                  <img [src]="coverFor(home)" [alt]="home.title" />
+                  <span>
+                    <strong>{{ homePrice(home) | inr }}</strong>
+                    <em>{{ home.title }}</em>
+                    <small>{{ home.locality }}, {{ home.city }}</small>
+                  </span>
+                </a>
+              }
+            </div>
+          } @else {
+            <p class="similar-empty">No other verified home in {{ property.city }} is close to this price yet.</p>
+          }
+        </section>
+      }
     </div>
 
     <div class="sticky-bar">

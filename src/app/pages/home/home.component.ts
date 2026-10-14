@@ -2,8 +2,10 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CatalogService } from '../../core/api/catalog.service';
+import { BlogCard, BlogService, blogCover } from '../../core/services/blog.service';
 import { PROPERTY_TYPE_LABELS, Property, PropertyType } from '../../core/models/property.model';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
+import { propertyCoverImage } from '../../shared/property-media';
 
 interface CitySpot {
   name: string;
@@ -26,6 +28,7 @@ interface TypeSpot {
 export class HomeComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly catalog = inject(CatalogService);
+  private readonly blog = inject(BlogService);
 
   readonly propertyTypes = Object.entries(PROPERTY_TYPE_LABELS) as [PropertyType, string][];
 
@@ -35,6 +38,7 @@ export class HomeComponent implements OnInit {
 
   featured: Property[] = [];
   featuredLoading = true;
+  guides: BlogCard[] = [];
 
   readonly cities: CitySpot[] = [
     {
@@ -88,22 +92,40 @@ export class HomeComponent implements OnInit {
       image:
         'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=80',
     },
+    {
+      type: 'SOCIETY',
+      label: 'Societies',
+      image:
+        'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1000&q=80',
+    },
   ];
 
   readonly steps = [
     {
-      title: 'Documents checked',
-      text: 'Ownership, sale deed, encumbrance and tax records reviewed by legal experts.',
+      icon: 'home',
+      title: 'Registered property',
+      text: 'The seller registers the home with address, type and ownership details.',
     },
     {
-      title: 'Physical inspection',
-      text: 'On-ground visit confirms layout, condition and what the papers claim.',
+      icon: 'document',
+      title: 'Documents',
+      text: 'Sale deed, encumbrance and tax records are checked against the listing.',
     },
     {
-      title: 'Admin publish',
-      text: 'Only after final approval does a listing go LIVE for buyers to browse.',
+      icon: 'inspection',
+      title: 'Inspection',
+      text: 'An on-ground visit confirms layout, condition and what the papers claim.',
+    },
+    {
+      icon: 'publish',
+      title: 'Publish',
+      text: 'The listing goes LIVE so buyers can browse it.',
     },
   ];
+
+  cover(property: Property): string {
+    return propertyCoverImage(property);
+  }
 
   ngOnInit(): void {
     this.catalog.list({ page: 1, limit: 4 }).subscribe({
@@ -116,6 +138,18 @@ export class HomeComponent implements OnInit {
         this.featuredLoading = false;
       },
     });
+    this.blog.list({ limit: 3 }).subscribe({
+      next: (res) => {
+        this.guides = res.data ?? [];
+      },
+      error: () => {
+        this.guides = [];
+      },
+    });
+  }
+
+  guideCover(post: BlogCard): string {
+    return blogCover(post.coverImageUrl);
   }
 
   search(): void {

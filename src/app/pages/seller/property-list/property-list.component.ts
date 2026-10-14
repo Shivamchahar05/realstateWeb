@@ -68,8 +68,34 @@ export class PropertyListComponent implements OnInit {
     return Math.max(1, Math.ceil(this.total / this.limit));
   }
 
-  formatStatus(value: string): string {
-    return value.replaceAll('_', ' ');
+  statusLabel(value: string): string {
+    const labels: Record<string, string> = {
+      DRAFT: 'Draft',
+      SUBMITTED: 'Submitted',
+      DOCUMENT_COLLECTION: 'Documents',
+      AI_ANALYSIS: 'Document check',
+      LEGAL_REVIEW: 'Legal review',
+      GOVERNMENT_CHECK: 'Records check',
+      PHYSICAL_INSPECTION: 'Inspection',
+      VALUATION: 'Valuation',
+      RISK_ASSESSMENT: 'Risk check',
+      FINAL_REVIEW: 'Final review',
+      VERIFIED: 'Verified',
+      REVIEW_REQUIRED: 'Needs changes',
+      REJECTED: 'Rejected',
+      PENDING_VERIFICATION: 'In review',
+      LIVE: 'Live',
+      ARCHIVED: 'Archived',
+    };
+    return labels[value] ?? value.replaceAll('_', ' ');
+  }
+
+  tone(value: string): 'good' | 'progress' | 'warn' | 'bad' | 'draft' {
+    if (value === 'VERIFIED' || value === 'LIVE') return 'good';
+    if (value === 'REVIEW_REQUIRED') return 'warn';
+    if (value === 'REJECTED') return 'bad';
+    if (value === 'DRAFT' || value === 'ARCHIVED') return 'draft';
+    return 'progress';
   }
 
   canEdit(property: Property): boolean {

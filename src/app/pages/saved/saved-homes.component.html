@@ -1,0 +1,65 @@
+<section class="saved-page">
+  <div class="container">
+    <header class="saved-head">
+      <div>
+        <p class="eyebrow">Shortlist</p>
+        <h1>Saved homes</h1>
+        <p>{{ total() }} saved</p>
+      </div>
+      <a routerLink="/browse" class="text-link">Browse more</a>
+    </header>
+
+    @if (loading()) {
+      <p class="loading">Loading saved homes…</p>
+    } @else if (!total()) {
+      <div class="empty">
+        <p>No saved homes yet. Tap the heart on a listing to keep it here.</p>
+        <a routerLink="/browse" class="btn btn-primary">Browse homes</a>
+      </div>
+    } @else {
+      <div class="saved-list">
+        @for (home of pageItems(); track home.id) {
+          <article class="saved-card">
+            <a class="saved-photo" [routerLink]="['/properties', home.id]">
+              <img [src]="cover(home)" [alt]="home.title" loading="lazy" />
+            </a>
+            <div class="saved-copy">
+              <h2>{{ home.title }}</h2>
+              <p>{{ home.locality }}, {{ home.city }}</p>
+              <p class="price">{{ home.askingPrice | inr }}</p>
+              @if (home.bhk) {
+                <p class="meta">{{ home.bhk }} BHK</p>
+              }
+              @if (home.trustScore != null) {
+                <p class="meta">Trust {{ home.trustScore }}/100</p>
+              }
+            </div>
+            <div class="saved-actions">
+              <a class="btn view-btn" [routerLink]="['/properties', home.id]">View details</a>
+              <button type="button" class="btn remove-btn" (click)="remove(home.id)">
+                Remove from saved
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+
+      @if (totalPages() > 1) {
+        <nav class="pager" aria-label="Saved homes pages">
+          <button type="button" class="btn page-btn" [disabled]="page === 1" (click)="goToPage(page - 1)">
+            Previous
+          </button>
+          <span>Page {{ page }} of {{ totalPages() }}</span>
+          <button
+            type="button"
+            class="btn page-btn"
+            [disabled]="page === totalPages()"
+            (click)="goToPage(page + 1)"
+          >
+            Next
+          </button>
+        </nav>
+      }
+    }
+  </div>
+</section>

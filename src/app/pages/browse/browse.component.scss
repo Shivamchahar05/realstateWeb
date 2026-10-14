@@ -166,6 +166,32 @@ select:focus {
   color: rgba(11, 28, 44, 0.6);
 }
 
+.recent-strip {
+  margin: 0 0 1.25rem;
+}
+
+.recent-strip h2 {
+  margin: 0 0 0.55rem;
+  font-size: 1rem;
+}
+
+.recent-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+}
+
+.recent-row a {
+  flex: 0 0 auto;
+  background: #fff;
+  color: inherit;
+  text-decoration: none;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 650;
+  border: 1px solid rgba(11, 28, 44, 0.08);
+}
+
 .listing-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -177,10 +203,67 @@ select:focus {
   flex-direction: column;
   background: #fff;
   border: 1px solid rgba(11, 28, 44, 0.08);
-  text-decoration: none;
   color: inherit;
   overflow: hidden;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card-media a {
+  display: block;
+  height: 100%;
+}
+
+.card-loc a,
+.card-cta {
+  color: inherit;
+  text-decoration: none;
+}
+
+.card-tools {
+  position: absolute;
+  left: 0.7rem;
+  right: 0.7rem;
+  bottom: 0.7rem;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.card-tools button {
+  border: 0;
+  background: rgba(255, 255, 255, 0.94);
+  color: #0b1c2c;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.32rem 0.55rem;
+  cursor: pointer;
+}
+
+.card-heart {
+  width: 2rem;
+  height: 2rem;
+  padding: 0 !important;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+}
+
+.card-heart svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linejoin: round;
+}
+
+.card-heart.is-on {
+  color: #e2556a;
+}
+
+.card-heart.is-on svg {
+  fill: currentColor;
+  stroke: currentColor;
 }
 
 .property-card:hover {

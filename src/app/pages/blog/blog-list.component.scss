@@ -1,0 +1,151 @@
+.blog-page {
+  background: #f3f1ec;
+  color: #132536;
+  min-height: calc(100vh - 4rem);
+  padding: 2.5rem 0 4rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.35rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: #4a5d6c;
+}
+
+.blog-head h1 {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-display);
+}
+
+.blog-head p {
+  margin: 0;
+  color: #4a5d6c;
+}
+
+.category-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 1.4rem 0 1.2rem;
+}
+
+.category-row button,
+.pager button {
+  border: 1px solid rgba(19, 37, 54, 0.18);
+  background: #fff;
+  color: #132536;
+  border-radius: 999px;
+  padding: 0.4rem 0.8rem;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.category-row button.is-on {
+  background: #2f5d56;
+  border-color: #2f5d56;
+  color: #f7f5f1;
+}
+
+.post-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.post-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #fff;
+  color: inherit;
+  text-decoration: none;
+  border: 1px solid rgba(19, 37, 54, 0.08);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.post-media {
+  height: 168px;
+  flex: 0 0 168px;
+  background: #d9d4cb;
+  overflow: hidden;
+}
+
+.post-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.post-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+  padding: 0.85rem 0.95rem 1rem;
+}
+
+.post-cat,
+.post-date {
+  margin: 0;
+  color: #4a5d6c;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.post-cat {
+  color: #2f5d56;
+}
+
+.post-copy h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  line-height: 1.3;
+  font-weight: 600;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.excerpt {
+  margin: 0;
+  color: #4a5d6c;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.post-date {
+  margin-top: auto;
+  padding-top: 0.2rem;
+  font-weight: 650;
+}
+
+.muted {
+  color: #4a5d6c;
+}
+
+.pager {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 1.4rem;
+}
+
+.pager button:disabled {
+  opacity: 0.45;
+}

@@ -69,6 +69,17 @@
       </div>
     </form>
 
+    @if (library.recent().length) {
+      <section class="recent-strip">
+        <h2>Recently viewed</h2>
+        <div class="recent-row">
+          @for (home of library.recent(); track home.id) {
+            <a [routerLink]="['/properties', home.id]">{{ home.title }}</a>
+          }
+        </div>
+      </section>
+    }
+
     @if (loading) {
       <div class="state-block">
         <p>Loading verified listings…</p>
@@ -91,21 +102,53 @@
 
       <div class="listing-grid">
         @for (property of properties; track property.id) {
-          <a class="property-card" [routerLink]="['/properties', property.id]">
+          <article class="property-card">
             <div class="card-media">
-              <img [src]="coverImage(property)" [alt]="property.title" loading="lazy" />
+              <a [routerLink]="['/properties', property.id]">
+                <img [src]="coverImage(property)" [alt]="property.title" loading="lazy" />
+              </a>
               <span class="verified-tag">Verified</span>
               @if (property.trustScore != null) {
                 <span class="trust-tag">Trust {{ property.trustScore }}</span>
               }
+              <div class="card-tools">
+                <button
+                  type="button"
+                  class="card-heart"
+                  [class.is-on]="library.isSaved(property.id)"
+                  [attr.aria-label]="library.isSaved(property.id) ? 'Remove from saved' : 'Save home'"
+                  (click)="save(property)"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M12 20.5s-7-4.4-9.2-8.4C1 9.2 1.5 5.8 4.1 4.3 6.4 3 9 3.7 12 6.8c3-3.1 5.6-3.8 7.9-2.5 2.6 1.5 3.1 4.9 1.3 7.8C19 16.1 12 20.5 12 20.5z"
+                    />
+                  </svg>
+                </button>
+                <button type="button" (click)="compare(property)">
+                  {{ library.isCompared(property.id) ? 'Added' : 'Compare' }}
+                </button>
+              </div>
             </div>
             <div class="card-body">
-              <p class="card-price">{{ priceOf(property) | inr }}</p>
+              <p class="card-price">
+                @if (property.propertyType === 'SOCIETY' && property.estimatedMinPrice && property.estimatedMaxPrice) {
+                  {{ property.estimatedMinPrice | inr }} – {{ property.estimatedMaxPrice | inr }}
+                } @else {
+                  {{ priceOf(property) | inr }}
+                }
+              </p>
               <h3>{{ property.title }}</h3>
-              <p class="card-loc">{{ property.locality }}, {{ property.city }}</p>
+              <p class="card-loc">
+                <a [routerLink]="['/localities', property.city, property.locality]">
+                  {{ property.locality }}, {{ property.city }}
+                </a>
+              </p>
               <div class="card-specs">
                 <span>{{ typeLabels[property.propertyType] }}</span>
-                @if (property.bhk) {
+                @if (property.propertyType === 'SOCIETY' && property.bhkConfigurations?.length) {
+                  <span>{{ property.bhkConfigurations!.join(', ') }} BHK</span>
+                } @else if (property.bhk) {
                   <span>{{ property.bhk }} BHK</span>
                 }
                 @if (areaLabel(property)) {
@@ -115,9 +158,9 @@
                   <span>Ready to move</span>
                 }
               </div>
-              <span class="card-cta">View details →</span>
+              <a class="card-cta" [routerLink]="['/properties', property.id]">View details →</a>
             </div>
-          </a>
+          </article>
         }
       </div>
 
