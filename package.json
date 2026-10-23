@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --port 4201",
-    "build": "ng build",
+    "build": "ng build && node scripts/write-seo.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },

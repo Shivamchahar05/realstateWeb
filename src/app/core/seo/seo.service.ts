@@ -1,6 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { Injectable, inject } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
+import { environment } from '../../../environments/environment';
 
 export interface PageSeo {
   title: string;
@@ -21,6 +22,8 @@ export class SeoService {
   private readonly document = inject(DOCUMENT);
 
   origin(): string {
+    const configured = environment.siteUrl?.replace(/\/$/, '');
+    if (configured) return configured;
     return this.document.location?.origin ?? '';
   }
 

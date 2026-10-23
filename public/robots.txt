@@ -8,3 +8,5 @@ Disallow: /account
 Disallow: /my-requests
 Disallow: /seller/
 Disallow: /compare
+
+Sitemap: https://titlefolio.netlify.app/sitemap.xml
