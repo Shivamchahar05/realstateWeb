@@ -1,7 +1,7 @@
 import { Location } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { Title } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
+import { SeoService } from '../../core/seo/seo.service';
 import { CatalogService, CityInsight } from '../../core/api/catalog.service';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 
@@ -12,7 +12,7 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
   styleUrls: ['./tools.scss', './price-insights.component.scss'],
 })
 export class PriceInsightsComponent implements OnInit {
-  private readonly title = inject(Title);
+  private readonly seo = inject(SeoService);
   private readonly catalog = inject(CatalogService);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
@@ -34,7 +34,12 @@ export class PriceInsightsComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.title.setTitle('Price insights | PropSure');
+    this.seo.set({
+      title: 'Price insights for NCR homes',
+      description:
+        'Median asking prices for verified homes in Gurgaon, Noida, Delhi and Faridabad, from listings on Titlefolio.',
+      path: '/price-insights',
+    });
     this.catalog.priceInsights().subscribe({
       next: (result) => {
         this.cities.set(result.cities);

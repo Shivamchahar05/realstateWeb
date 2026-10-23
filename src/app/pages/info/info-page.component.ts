@@ -1,8 +1,8 @@
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { SeoService } from '../../core/seo/seo.service';
 import { ApiService } from '../../core/services/api.service';
 
 type InfoPageId = 'about' | 'contact' | 'privacy' | 'terms';
@@ -22,8 +22,8 @@ interface InfoPage {
 const PAGES: Record<InfoPageId, InfoPage> = {
   about: {
     eyebrow: 'Company',
-    title: 'About PropSure',
-    lead: 'PropSure lists verified homes for buyers and sellers across NCR.',
+    title: 'About Titlefolio',
+    lead: 'Titlefolio lists verified homes for buyers and sellers across NCR.',
     sections: [
       {
         heading: 'What gets published',
@@ -50,7 +50,7 @@ const PAGES: Record<InfoPageId, InfoPage> = {
   privacy: {
     eyebrow: 'Legal',
     title: 'Privacy',
-    lead: 'What PropSure stores, and what we use it for. Last updated 14 October 2026.',
+    lead: 'What Titlefolio stores, and what we use it for. Last updated 14 October 2026.',
     sections: [
       {
         heading: 'Account and listing details',
@@ -84,12 +84,12 @@ const PAGES: Record<InfoPageId, InfoPage> = {
   terms: {
     eyebrow: 'Legal',
     title: 'Terms',
-    lead: 'The rules for using PropSure. Last updated 14 October 2026.',
+    lead: 'The rules for using Titlefolio. Last updated 14 October 2026.',
     sections: [
       {
         heading: 'Using the site',
         paragraphs: [
-          'Use PropSure to look for a home, save listings, or submit a property you are allowed to sell.',
+          'Use Titlefolio to look for a home, save listings, or submit a property you are allowed to sell.',
           'Do not post a listing you do not control, or a price, photo or document set you know is false.',
         ],
       },
@@ -130,7 +130,7 @@ const PAGES: Record<InfoPageId, InfoPage> = {
 })
 export class InfoPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
-  private readonly title = inject(Title);
+  private readonly seo = inject(SeoService);
   private readonly api = inject(ApiService);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
@@ -156,7 +156,11 @@ export class InfoPageComponent implements OnInit {
       this.sent.set(false);
       this.error.set(null);
       const content = PAGES[id];
-      this.title.setTitle(`${content.title} | PropSure`);
+      this.seo.set({
+        title: content.title,
+        description: content.lead,
+        path: `/${id === 'about' ? 'about' : id}`,
+      });
     });
   }
 

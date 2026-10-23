@@ -10,6 +10,7 @@ import {
   PropertyType,
 } from '../../../core/models/seller-property.model';
 import { SellerPropertyService } from '../../../core/services/seller-property.service';
+import { SeoService } from '../../../core/seo/seo.service';
 import { environment } from '../../../../environments/environment';
 
 interface PendingMedia {
@@ -30,6 +31,7 @@ export class PropertyFormComponent implements OnInit, OnDestroy {
   private readonly propertyService = inject(SellerPropertyService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly seo = inject(SeoService);
 
   readonly propertyTypes = PROPERTY_TYPES;
   readonly furnishingStatuses = FURNISHING_STATUSES;
@@ -92,6 +94,10 @@ export class PropertyFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.seo.privatePage(
+      this.route.snapshot.paramMap.get('id') ? 'Edit property' : 'Add property',
+      'Seller listing form on Titlefolio.',
+    );
     this.typeWatch = this.form.controls.propertyType.valueChanges.subscribe((type) => {
       this.syncPriceValidators(type === 'SOCIETY');
     });

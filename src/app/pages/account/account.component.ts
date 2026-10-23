@@ -2,6 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { SeoService } from '../../core/seo/seo.service';
 import { User } from '../../core/models/user.model';
 import { BuyerLibraryService } from '../../core/services/buyer-library.service';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
@@ -14,12 +15,14 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 })
 export class AccountComponent implements OnInit {
   private readonly auth = inject(AuthService);
+  private readonly seo = inject(SeoService);
   readonly library = inject(BuyerLibraryService);
 
   loading = true;
   profile: User | null = null;
 
   ngOnInit(): void {
+    this.seo.privatePage('My profile', 'Your Titlefolio account.');
     this.profile = this.auth.currentUser();
     this.auth.me().subscribe({
       next: (res) => {

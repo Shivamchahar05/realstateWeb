@@ -31,10 +31,11 @@ export interface SellerContact {
   whatsappUrl: string;
 }
 
-export interface PropertyHealthReport {
-  id: string;
-  overallScore?: number | null;
-  summary?: string | null;
+export interface VerificationReport {
+  checkedOn?: string | null;
+  checks: { label: string; detail: string }[];
+  areas: string[];
+  note: string;
 }
 
 export interface PropertyDocument {
@@ -84,7 +85,7 @@ export interface Property {
   seller?: PropertySeller | null;
   sellerContact?: SellerContact | null;
   media?: PropertyMedia[];
-  healthReport?: PropertyHealthReport | null;
+  verificationReport?: VerificationReport | null;
   documents?: PropertyDocument[];
   createdAt?: string;
   updatedAt?: string;

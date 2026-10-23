@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Property, PropertyType } from '../../core/models/property.model';
 import { BuyerLibraryService, LibraryItem } from '../../core/services/buyer-library.service';
+import { SeoService } from '../../core/seo/seo.service';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 import { propertyCoverImage } from '../../shared/property-media';
 
@@ -14,6 +15,7 @@ import { propertyCoverImage } from '../../shared/property-media';
 export class SavedHomesComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly seo = inject(SeoService);
   readonly library = inject(BuyerLibraryService);
 
   readonly pageSize = 6;
@@ -23,6 +25,7 @@ export class SavedHomesComponent {
   readonly loading = signal(true);
 
   constructor() {
+    this.seo.privatePage('Saved homes', 'Homes you saved on Titlefolio.');
     this.route.queryParamMap.subscribe((params) => {
       const requested = Number(params.get('page') ?? 1);
       this.page = Number.isFinite(requested) && requested > 0 ? Math.floor(requested) : 1;

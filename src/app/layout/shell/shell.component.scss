@@ -26,6 +26,9 @@ main {
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
   font-family: var(--font-display);
   font-size: 1.45rem;
   font-weight: 600;
@@ -33,6 +36,12 @@ main {
   color: var(--color-stone);
   text-decoration: none;
   white-space: nowrap;
+
+  img {
+    width: 2rem;
+    height: 2rem;
+    display: block;
+  }
 }
 
 .site-nav {

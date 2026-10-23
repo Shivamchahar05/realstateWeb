@@ -15,7 +15,7 @@
   <article class="detail-page">
     <div class="hero-stage">
       <img class="hero-image" [src]="heroSrc()" [alt]="property.title" />
-      <div class="hero-shade"></div>
+      <div class="hero-shade" (click)="openGallery(activePhotoIndex)"></div>
 
       <div class="hero-top container">
         <a routerLink="/browse" class="back-link">← All listings</a>
@@ -39,6 +39,14 @@
           <p class="hero-trust">Trust score {{ property.trustScore }}/100</p>
         }
       </div>
+
+      <button type="button" class="view-photos" (click)="openGallery(showVideo ? photos().length : activePhotoIndex)">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3.5" y="5" width="17" height="14" rx="2" />
+          <path d="M3.5 15.5 8.2 11l3.2 3.1 2.4-2.2L20.5 16" />
+        </svg>
+        {{ galleryLabel() }}
+      </button>
     </div>
 
     @if (photos().length > 1 || videos().length) {
@@ -86,6 +94,38 @@
               }}
             </p>
           </section>
+
+          @if (report(); as summary) {
+            <section class="block report slide-up">
+              <div class="report-head">
+                <h2>Verification report</h2>
+                @if (summary.checkedOn) {
+                  <p>Checked {{ summary.checkedOn | date: 'mediumDate' }}</p>
+                }
+              </div>
+              <ul class="report-list">
+                @for (check of summary.checks; track check.label) {
+                  <li>
+                    <span class="report-mark" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M6 12.5 10 16.5 18 8" /></svg>
+                    </span>
+                    <span>
+                      <strong>{{ check.label }}</strong>
+                      <em>{{ check.detail }}</em>
+                    </span>
+                  </li>
+                }
+              </ul>
+              @if (summary.areas.length) {
+                <p class="report-areas">
+                  @for (area of summary.areas; track area) {
+                    <span>{{ area }}</span>
+                  }
+                </p>
+              }
+              <p class="report-note">{{ summary.note }}</p>
+            </section>
+          }
 
           <section class="block slide-up delay-1">
             <h2>{{ property.propertyType === 'SOCIETY' ? 'Society details' : 'Property highlights' }}</h2>
@@ -396,7 +436,7 @@
               <div class="request-done">
                 <p class="done-title">Request submitted</p>
                 <p class="done-copy">
-                  PropSure has your interest. Our team will follow up with next steps.
+                  Titlefolio has your interest. Our team will follow up with next steps.
                 </p>
                 <a routerLink="/my-requests" class="btn btn-ghost panel-cta">View my requests</a>
               </div>
@@ -451,9 +491,6 @@
             @if (property.trustScore != null) {
               <p><span>Trust score</span> <strong>{{ property.trustScore }}/100</strong></p>
             }
-            @if (property.healthReport?.summary) {
-              <p class="health-summary">{{ property.healthReport?.summary }}</p>
-            }
           </div>
         </aside>
       </div>
@@ -506,5 +543,58 @@
         }
       </div>
     </div>
+
+    @if (galleryOpen) {
+      <div class="lightbox" role="dialog" aria-modal="true" aria-label="Property photos" (click)="closeGallery()">
+        <div class="lightbox-top">
+          <p>{{ galleryIndex + 1 }} / {{ galleryItems().length }}</p>
+          <button type="button" class="lightbox-close" (click)="closeGallery()">Close</button>
+        </div>
+        <button
+          type="button"
+          class="lightbox-nav lightbox-prev"
+          aria-label="Previous"
+          [disabled]="galleryItems().length < 2"
+          (click)="$event.stopPropagation(); stepGallery(-1)"
+        >
+          ‹
+        </button>
+        <div class="lightbox-stage" (click)="$event.stopPropagation()">
+          @if (currentGallery(); as item) {
+            @if (item.kind === 'video') {
+              <video [src]="item.src" controls autoplay playsinline [attr.aria-label]="item.label"></video>
+            } @else {
+              <img [src]="item.src" [alt]="item.label" />
+            }
+          }
+        </div>
+        <button
+          type="button"
+          class="lightbox-nav lightbox-next"
+          aria-label="Next"
+          [disabled]="galleryItems().length < 2"
+          (click)="$event.stopPropagation(); stepGallery(1)"
+        >
+          ›
+        </button>
+        <div class="lightbox-film" (click)="$event.stopPropagation()">
+          @for (item of galleryItems(); track item.id; let i = $index) {
+            <button
+              type="button"
+              class="lightbox-thumb"
+              [class.is-active]="galleryIndex === i"
+              [class.is-video]="item.kind === 'video'"
+              (click)="galleryIndex = i"
+            >
+              @if (item.kind === 'video') {
+                <span>Video</span>
+              } @else {
+                <img [src]="item.src" [alt]="item.label" />
+              }
+            </button>
+          }
+        </div>
+      </div>
+    }
   </article>
 }

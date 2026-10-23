@@ -2,7 +2,15 @@
   <div class="browse-hero">
     <div class="container">
       <p class="eyebrow">Verified inventory</p>
-      <h1>Find your next home</h1>
+      <h1>
+        @if (filters.locality && filters.city) {
+          Homes in {{ filters.locality }}, {{ filters.city }}
+        } @else if (filters.city) {
+          Homes in {{ filters.city }}
+        } @else {
+          Find your next home
+        }
+      </h1>
       <p class="lead">Only LIVE listings that cleared legal review and inspection.</p>
     </div>
   </div>

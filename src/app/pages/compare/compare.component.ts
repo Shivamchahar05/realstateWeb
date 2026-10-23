@@ -5,6 +5,7 @@ import { catchError } from 'rxjs/operators';
 import { CatalogService } from '../../core/api/catalog.service';
 import { PROPERTY_TYPE_LABELS, Property } from '../../core/models/property.model';
 import { BuyerLibraryService } from '../../core/services/buyer-library.service';
+import { SeoService } from '../../core/seo/seo.service';
 import { amenityMeta } from '../../shared/property-features';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 
@@ -16,12 +17,14 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 })
 export class CompareComponent implements OnInit {
   private readonly catalog = inject(CatalogService);
+  private readonly seo = inject(SeoService);
   readonly library = inject(BuyerLibraryService);
 
   properties: Property[] = [];
   loading = true;
 
   ngOnInit(): void {
+    this.seo.privatePage('Compare homes', 'Compare homes you selected on Titlefolio.');
     const ids = this.library.compareIds();
     if (!ids.length) {
       this.loading = false;

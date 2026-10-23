@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CatalogService } from '../../core/api/catalog.service';
+import { SeoService } from '../../core/seo/seo.service';
 import {
   PROPERTY_TYPE_LABELS,
   Property,
@@ -22,6 +23,7 @@ export class BrowseComponent implements OnInit {
   private readonly catalog = inject(CatalogService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly seo = inject(SeoService);
   readonly library = inject(BuyerLibraryService);
 
   readonly propertyTypes = Object.entries(PROPERTY_TYPE_LABELS) as [PropertyType, string][];
@@ -65,7 +67,33 @@ export class BrowseComponent implements OnInit {
         search: params.get('search') ?? '',
       };
 
+      this.applySeo();
       this.loadProperties();
+    });
+  }
+
+  private applySeo(): void {
+    const city = this.filters.city;
+    const locality = this.filters.locality;
+    const type = this.filters.propertyType
+      ? PROPERTY_TYPE_LABELS[this.filters.propertyType as PropertyType]
+      : '';
+    const place = locality && city ? `${locality}, ${city}` : city || 'NCR';
+    const subject = type ? `${type.toLowerCase()} homes` : 'verified homes';
+    const query = new URLSearchParams();
+    if (city) query.set('city', city);
+    if (locality) query.set('locality', locality);
+    if (this.filters.propertyType) query.set('propertyType', this.filters.propertyType);
+    if (this.filters.search) query.set('search', this.filters.search);
+    if (this.filters.minPrice) query.set('minPrice', String(this.filters.minPrice));
+    if (this.filters.maxPrice) query.set('maxPrice', String(this.filters.maxPrice));
+    if ((this.filters.page ?? 1) > 1) query.set('page', String(this.filters.page));
+    const qs = query.toString();
+
+    this.seo.set({
+      title: city || locality || type ? `${type || 'Verified'} homes in ${place}` : 'Verified homes in NCR',
+      description: `Browse ${subject} in ${place} on Titlefolio. A listing goes live after document review and a site inspection.`,
+      path: qs ? `/browse?${qs}` : '/browse',
     });
   }
 

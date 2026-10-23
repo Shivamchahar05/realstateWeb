@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CatalogService } from '../../core/api/catalog.service';
+import { SeoService } from '../../core/seo/seo.service';
 import { BlogCard, BlogService, blogCover } from '../../core/services/blog.service';
 import { PROPERTY_TYPE_LABELS, Property, PropertyType } from '../../core/models/property.model';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
@@ -29,6 +30,7 @@ export class HomeComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly catalog = inject(CatalogService);
   private readonly blog = inject(BlogService);
+  private readonly seo = inject(SeoService);
 
   readonly propertyTypes = Object.entries(PROPERTY_TYPE_LABELS) as [PropertyType, string][];
 
@@ -128,6 +130,34 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    const origin = this.seo.origin();
+    this.seo.set({
+      title: 'Verified homes in Gurgaon, Noida, Delhi and Faridabad',
+      description:
+        'Titlefolio lists homes across NCR that already passed document review and a site inspection. Search apartments, villas and plots in Gurgaon, Noida, Delhi and Faridabad.',
+      path: '/',
+      jsonLd: [
+        {
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: 'Titlefolio',
+          url: `${origin}/`,
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: `${origin}/browse?search={search_term_string}`,
+            'query-input': 'required name=search_term_string',
+          },
+        },
+        {
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          name: 'Titlefolio',
+          url: `${origin}/`,
+          logo: `${origin}/logo.svg`,
+          areaServed: ['Gurgaon', 'Noida', 'Delhi', 'Faridabad'],
+        },
+      ],
+    });
     this.catalog.list({ page: 1, limit: 4 }).subscribe({
       next: (res) => {
         this.featured = res.data ?? [];

@@ -11,6 +11,7 @@ import {
   VerificationHistoryEntry,
 } from '../../../core/models/seller-property.model';
 import { SellerPropertyService } from '../../../core/services/seller-property.service';
+import { SeoService } from '../../../core/seo/seo.service';
 import { PropertyRequestService } from '../../../core/services/property-request.service';
 import { PropertyRequest } from '../../../core/models/property-request.model';
 import { InrCurrencyPipe } from '../../../shared/pipes/inr-currency.pipe';
@@ -38,6 +39,7 @@ export class PropertyDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly propertyService = inject(SellerPropertyService);
   private readonly requestService = inject(PropertyRequestService);
+  private readonly seo = inject(SeoService);
 
   readonly documentCategories = DOCUMENT_CATEGORIES;
 
@@ -66,6 +68,7 @@ export class PropertyDetailComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.seo.privatePage('Listing', 'Seller view of a Titlefolio listing.');
     const id = this.route.snapshot.paramMap.get('id');
     if (id) this.loadProperty(id);
   }

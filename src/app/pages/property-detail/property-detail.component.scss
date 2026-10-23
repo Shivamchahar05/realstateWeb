@@ -54,9 +54,44 @@
 .hero-shade {
   position: absolute;
   inset: 0;
+  cursor: zoom-in;
   background:
     linear-gradient(180deg, rgba(12, 24, 34, 0.35) 0%, rgba(12, 24, 34, 0.15) 35%, rgba(12, 24, 34, 0.78) 100%),
     linear-gradient(90deg, rgba(12, 24, 34, 0.45) 0%, transparent 55%);
+}
+
+.view-photos {
+  position: absolute;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 0.9rem;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  color: #132536;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(8, 16, 24, 0.28);
+
+  svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+}
+
+.view-photos:hover {
+  background: #f4f1ea;
 }
 
 .hero-top {
@@ -774,6 +809,95 @@
   line-height: 1.5;
 }
 
+.report-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: baseline;
+  margin-bottom: 0.35rem;
+
+  h2 {
+    margin-bottom: 0;
+  }
+
+  p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+  }
+}
+
+.report-list {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+
+  li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: start;
+  }
+
+  strong {
+    display: block;
+    font-size: 1rem;
+  }
+
+  em {
+    display: block;
+    margin-top: 0.15rem;
+    font-style: normal;
+    color: var(--ink-soft);
+    line-height: 1.45;
+  }
+}
+
+.report-mark {
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #e5f3ec;
+  color: #14532d;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.report-areas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 1rem 0 0;
+
+  span {
+    padding: 0.28rem 0.65rem;
+    border-radius: 999px;
+    background: #f4f1ea;
+    color: #173528;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+}
+
+.report-note {
+  margin: 1rem 0 0;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
 .verify-panel p {
   display: flex;
   justify-content: space-between;
@@ -794,6 +918,126 @@
   padding-top: 0.85rem;
   border-top: 1px solid var(--line);
   line-height: 1.55;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  background: rgba(8, 14, 20, 0.94);
+  color: #f7f5f1;
+}
+
+.lightbox-top {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.9rem 1.1rem;
+}
+
+.lightbox-close {
+  border: 1px solid rgba(247, 245, 241, 0.35);
+  background: transparent;
+  color: #f7f5f1;
+  border-radius: 999px;
+  padding: 0.4rem 0.8rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.lightbox-stage {
+  grid-column: 2;
+  grid-row: 2;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+
+  img,
+  video {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+  }
+
+  video {
+    width: min(960px, 100%);
+    background: #000;
+  }
+}
+
+.lightbox-nav {
+  grid-row: 2;
+  align-self: center;
+  width: 2.8rem;
+  height: 2.8rem;
+  margin: 0 0.6rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.lightbox-nav:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.lightbox-prev {
+  grid-column: 1;
+}
+
+.lightbox-next {
+  grid-column: 3;
+}
+
+.lightbox-film {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.8rem 1rem 1rem;
+}
+
+.lightbox-thumb {
+  flex: 0 0 auto;
+  width: 84px;
+  height: 64px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #1c2832;
+  color: #f7f5f1;
+  cursor: pointer;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.lightbox-thumb.is-active {
+  border-color: #fff;
+}
+
+.lightbox-thumb.is-video {
+  display: grid;
+  place-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .sticky-bar {

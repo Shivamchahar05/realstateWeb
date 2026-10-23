@@ -2,6 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PropertyRequestService } from '../../core/services/property-request.service';
+import { SeoService } from '../../core/seo/seo.service';
 import { PropertyRequest, propertyRequestStatusLabel } from '../../core/models/property-request.model';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 
@@ -13,12 +14,14 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 })
 export class MyRequestsComponent implements OnInit {
   private readonly requestsApi = inject(PropertyRequestService);
+  private readonly seo = inject(SeoService);
 
   loading = true;
   error = '';
   items: PropertyRequest[] = [];
 
   ngOnInit(): void {
+    this.seo.privatePage('My requests', 'Property requests you sent on Titlefolio.');
     this.requestsApi.listMine().subscribe({
       next: (res) => {
         this.items = res.data ?? [];

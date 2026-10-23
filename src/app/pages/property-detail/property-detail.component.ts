@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, HostListener, inject, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -22,6 +22,7 @@ import {
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 import { BuyerLibraryService } from '../../core/services/buyer-library.service';
 import { BlogCard, BlogService } from '../../core/services/blog.service';
+import { SeoService } from '../../core/seo/seo.service';
 
 @Component({
   selector: 'app-property-detail',
@@ -29,7 +30,7 @@ import { BlogCard, BlogService } from '../../core/services/blog.service';
   templateUrl: './property-detail.component.html',
   styleUrl: './property-detail.component.scss',
 })
-export class PropertyDetailComponent implements OnInit {
+export class PropertyDetailComponent implements OnInit, OnDestroy {
   private readonly catalog = inject(CatalogService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -38,6 +39,7 @@ export class PropertyDetailComponent implements OnInit {
   private readonly sanitizer = inject(DomSanitizer);
   readonly library = inject(BuyerLibraryService);
   private readonly blog = inject(BlogService);
+  private readonly seo = inject(SeoService);
   relatedGuide: BlogCard | null = null;
   similar: Property[] = [];
   similarReady = false;
@@ -50,6 +52,8 @@ export class PropertyDetailComponent implements OnInit {
   error = '';
   activePhotoIndex = 0;
   showVideo = false;
+  galleryOpen = false;
+  galleryIndex = 0;
   amenityFilter: string = 'ALL';
   amenitiesExpanded = false;
 
@@ -67,6 +71,18 @@ export class PropertyDetailComponent implements OnInit {
   actionNote = '';
   mapUrl: SafeResourceUrl | null = null;
 
+  ngOnDestroy(): void {
+    document.body.style.overflow = '';
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onGalleryKey(event: KeyboardEvent): void {
+    if (!this.galleryOpen) return;
+    if (event.key === 'Escape') this.closeGallery();
+    if (event.key === 'ArrowRight') this.stepGallery(1);
+    if (event.key === 'ArrowLeft') this.stepGallery(-1);
+  }
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
@@ -83,6 +99,7 @@ export class PropertyDetailComponent implements OnInit {
         this.downPayment = Math.round(this.price() * 0.2);
         this.mapUrl = this.buildMapUrl(res.data);
         this.library.remember(res.data);
+        this.applySeo(res.data);
         this.loading = false;
         this.loadExistingRequest(id);
         this.loadRelatedGuide(res.data.city, res.data.locality);
@@ -90,8 +107,64 @@ export class PropertyDetailComponent implements OnInit {
       },
       error: () => {
         this.error = 'This property is unavailable or no longer listed.';
+        this.seo.privatePage('Property unavailable', 'This listing is not available on Titlefolio.');
         this.loading = false;
       },
+    });
+  }
+
+  private applySeo(property: Property): void {
+    const type = PROPERTY_TYPE_LABELS[property.propertyType] ?? 'Home';
+    const price = Number(property.askingPrice);
+    const priceText =
+      Number.isFinite(price) && price > 0
+        ? new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 0,
+          }).format(price)
+        : '';
+    const blurb = (property.description || '').replace(/\s+/g, ' ').trim();
+    const bhk = property.bhk ? `${property.bhk} BHK ` : '';
+    const description =
+      blurb ||
+      `${bhk}${type} in ${property.locality}, ${property.city}${priceText ? ` at ${priceText}` : ''}. Published on Titlefolio after document review and a site inspection.`;
+    const image = propertyCoverImage(property);
+    const path = `/properties/${property.id}`;
+    const url = `${this.seo.origin()}${path}`;
+    const listing: Record<string, unknown> = {
+      '@context': 'https://schema.org',
+      '@type': 'RealEstateListing',
+      name: property.title,
+      description,
+      url,
+      image,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: property.address,
+        addressLocality: property.locality,
+        addressRegion: property.state || property.city,
+        postalCode: property.pincode || undefined,
+        addressCountry: 'IN',
+      },
+    };
+    if (property.bhk) listing['numberOfRooms'] = property.bhk;
+    if (property.carpetAreaSqft) {
+      listing['floorSize'] = {
+        '@type': 'QuantitativeValue',
+        value: property.carpetAreaSqft,
+        unitCode: 'FTK',
+      };
+    }
+    if (priceText) {
+      listing['offers'] = { '@type': 'Offer', priceCurrency: 'INR', price };
+    }
+    this.seo.set({
+      title: property.title,
+      description,
+      path,
+      image,
+      jsonLd: listing,
     });
   }
 
@@ -245,6 +318,25 @@ export class PropertyDetailComponent implements OnInit {
     return this.property?.verificationStatus === 'VERIFIED';
   }
 
+  report() {
+    const property = this.property;
+    if (!property || property.verificationStatus !== 'VERIFIED') return null;
+    if (property.verificationReport) return property.verificationReport;
+    return {
+      checkedOn: property.lastVerifiedAt ?? null,
+      areas: [] as string[],
+      checks: [
+        {
+          label: 'Document review',
+          detail: 'Cleared before this home was published. The files stay private.',
+        },
+        { label: 'Legal review', detail: 'Finished before the listing went live.' },
+        { label: 'Site inspection', detail: 'Covered before this home was published.' },
+      ],
+      note: 'This is a summary of the checks Titlefolio finished. It is not a government title guarantee.',
+    };
+  }
+
   statusLabel(): string {
     return (this.property?.verificationStatus ?? '—').replaceAll('_', ' ');
   }
@@ -281,9 +373,58 @@ export class PropertyDetailComponent implements OnInit {
   }
 
   openVideo(): void {
-    if (this.videos().length) {
-      this.showVideo = true;
-    }
+    const photos = this.photos().length;
+    const videoAt = photos > 0 ? photos : 0;
+    if (this.videos().length) this.openGallery(videoAt);
+  }
+
+  galleryItems(): { id: string; kind: 'photo' | 'video'; src: string; label: string }[] {
+    const photos = this.photos().map((item, index) => ({
+      id: item.id,
+      kind: 'photo' as const,
+      src: this.mediaSrc(item),
+      label: item.caption || `Photo ${index + 1}`,
+    }));
+    const videos = this.videos().map((item, index) => ({
+      id: item.id,
+      kind: 'video' as const,
+      src: this.mediaSrc(item),
+      label: item.caption || `Video ${index + 1}`,
+    }));
+    if (photos.length || videos.length) return [...photos, ...videos];
+    const cover = this.coverImage();
+    return cover ? [{ id: 'cover', kind: 'photo', src: cover, label: this.property?.title || 'Photo' }] : [];
+  }
+
+  galleryLabel(): string {
+    const photos = this.photos().length || (this.galleryItems().some((item) => item.kind === 'photo') ? 1 : 0);
+    const videos = this.videos().length;
+    const photoText = photos === 1 ? '1 photo' : `${photos} photos`;
+    if (!videos) return photoText;
+    return `${photoText} · ${videos === 1 ? '1 video' : `${videos} videos`}`;
+  }
+
+  openGallery(index = 0): void {
+    const items = this.galleryItems();
+    if (!items.length) return;
+    this.galleryIndex = Math.min(Math.max(index, 0), items.length - 1);
+    this.galleryOpen = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeGallery(): void {
+    this.galleryOpen = false;
+    document.body.style.overflow = '';
+  }
+
+  stepGallery(delta: number): void {
+    const total = this.galleryItems().length;
+    if (total < 2) return;
+    this.galleryIndex = (this.galleryIndex + delta + total) % total;
+  }
+
+  currentGallery() {
+    return this.galleryItems()[this.galleryIndex] ?? null;
   }
 
   furnishingStatusLabel(value: string | undefined): string {

@@ -1,7 +1,7 @@
 import { Location } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { SeoService } from '../../core/seo/seo.service';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 
 type CityName = 'Gurgaon' | 'Noida' | 'Delhi' | 'Faridabad';
@@ -29,7 +29,7 @@ const STAMP: Record<CityName, Record<Buyer, number>> = {
   styleUrls: ['./tools.scss', './stamp-duty.component.scss'],
 })
 export class StampDutyComponent implements OnInit {
-  private readonly title = inject(Title);
+  private readonly seo = inject(SeoService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
@@ -54,7 +54,12 @@ export class StampDutyComponent implements OnInit {
   readonly result = computed(() => this.calculate(this.city(), this.buyer(), this.price()));
 
   ngOnInit(): void {
-    this.title.setTitle('Stamp duty | PropSure');
+    this.seo.set({
+      title: 'Stamp duty calculator',
+      description:
+        'Estimate stamp duty for a home in Gurgaon, Faridabad, Delhi or Noida. The figure is on the price you enter, not the circle rate.',
+      path: '/stamp-duty',
+    });
     const params = this.route.snapshot.queryParamMap;
     const city = this.asCity(params.get('city'));
     const price = Number(params.get('price'));

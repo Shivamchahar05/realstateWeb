@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { SellerPropertyService } from '../../../core/services/seller-property.service';
+import { SeoService } from '../../../core/seo/seo.service';
 import { Property } from '../../../core/models/seller-property.model';
 import { InrCurrencyPipe } from '../../../shared/pipes/inr-currency.pipe';
 
@@ -16,6 +17,7 @@ import { InrCurrencyPipe } from '../../../shared/pipes/inr-currency.pipe';
 })
 export class PropertyListComponent implements OnInit {
   private readonly propertyService = inject(SellerPropertyService);
+  private readonly seo = inject(SeoService);
 
   properties: Property[] = [];
   loading = true;
@@ -27,6 +29,7 @@ export class PropertyListComponent implements OnInit {
   readonly searchControl = new FormControl('', { nonNullable: true });
 
   ngOnInit(): void {
+    this.seo.privatePage('My properties', 'Listings on your Titlefolio seller account.');
     this.loadProperties();
     this.searchControl.valueChanges.pipe(debounceTime(350), distinctUntilChanged()).subscribe(() => {
       this.page = 1;

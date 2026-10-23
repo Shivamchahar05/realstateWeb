@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CatalogService } from '../../core/api/catalog.service';
+import { SeoService } from '../../core/seo/seo.service';
 import { Property } from '../../core/models/property.model';
 import { nearbyCategoryLabel } from '../../shared/property-features';
 import { propertyCoverImage } from '../../shared/property-media';
@@ -23,6 +24,7 @@ export class LocalityComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly catalog = inject(CatalogService);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly seo = inject(SeoService);
 
   city = '';
   locality = '';
@@ -36,6 +38,21 @@ export class LocalityComponent implements OnInit {
     this.route.paramMap.subscribe((params) => {
       this.city = params.get('city') ?? '';
       this.locality = params.get('locality') ?? '';
+      const place = `${this.locality}, ${this.city}`;
+      this.seo.set({
+        title: `Homes in ${place}`,
+        description: `Verified homes in ${place}. See listings and nearby places buyers check before a visit.`,
+        path: `/localities/${encodeURIComponent(this.city)}/${encodeURIComponent(this.locality)}`,
+        jsonLd: {
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: `${this.seo.origin()}/` },
+            { '@type': 'ListItem', position: 2, name: this.city, item: `${this.seo.origin()}/browse?city=${encodeURIComponent(this.city)}` },
+            { '@type': 'ListItem', position: 3, name: this.locality, item: `${this.seo.origin()}/localities/${encodeURIComponent(this.city)}/${encodeURIComponent(this.locality)}` },
+          ],
+        },
+      });
       this.mapUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
         `https://maps.google.com/maps?q=${encodeURIComponent(`${this.locality}, ${this.city}, India`)}&z=14&output=embed`,
       );

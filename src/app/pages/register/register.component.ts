@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { SeoService } from '../../core/seo/seo.service';
 
 @Component({
   selector: 'app-register',
@@ -13,6 +14,7 @@ export class RegisterComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly seo = inject(SeoService);
 
   fullName = '';
   email = '';
@@ -23,6 +25,7 @@ export class RegisterComponent implements OnInit {
   error = '';
 
   ngOnInit(): void {
+    this.seo.privatePage('Create account', 'Create a Titlefolio buyer or seller account.');
     const role = this.route.snapshot.queryParamMap.get('role');
     if (role === 'SELLER' || role === 'BUYER') {
       this.role = role;

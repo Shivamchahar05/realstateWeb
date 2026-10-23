@@ -62,7 +62,7 @@
             </div>
 
             @if (city.localities.length) {
-              <p class="field-label">Localities on PropSure</p>
+              <p class="field-label">Localities on Titlefolio</p>
               <div class="localities">
                 @for (locality of city.localities; track locality.name) {
                   <a [routerLink]="['/localities', city.city, locality.name]">

@@ -1,7 +1,7 @@
 import { Location } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { SeoService } from '../../core/seo/seo.service';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 
 type CityName = 'Gurgaon' | 'Noida' | 'Delhi' | 'Faridabad';
@@ -15,7 +15,7 @@ const CITIES: CityName[] = ['Gurgaon', 'Noida', 'Delhi', 'Faridabad'];
   styleUrls: ['./tools.scss', './stamp-duty.component.scss', './affordability.component.scss'],
 })
 export class AffordabilityComponent implements OnInit {
-  private readonly title = inject(Title);
+  private readonly seo = inject(SeoService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
@@ -39,7 +39,12 @@ export class AffordabilityComponent implements OnInit {
   readonly result = computed(() => this.calculate());
 
   ngOnInit(): void {
-    this.title.setTitle('Affordability | PropSure');
+    this.seo.set({
+      title: 'Home affordability calculator',
+      description:
+        'See the home price a monthly income can support in NCR, including EMI, down payment and other loans.',
+      path: '/affordability',
+    });
     const params = this.route.snapshot.queryParamMap;
     const city = this.asCity(params.get('city'));
     const income = Number(params.get('income'));

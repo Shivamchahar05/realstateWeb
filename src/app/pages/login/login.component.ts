@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { SeoService } from '../../core/seo/seo.service';
 
 @Component({
   selector: 'app-login',
@@ -13,11 +14,16 @@ export class LoginComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly seo = inject(SeoService);
 
   email = '';
   password = '';
   loading = false;
   error = '';
+
+  constructor() {
+    this.seo.privatePage('Sign in', 'Sign in to your Titlefolio account.');
+  }
 
   submit(): void {
     this.loading = true;
